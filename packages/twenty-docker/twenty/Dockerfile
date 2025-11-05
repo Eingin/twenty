@@ -50,6 +50,7 @@ FROM node:24-alpine AS twenty
 RUN apk add --no-cache curl jq
 
 RUN npm install -g tsx
+RUN npm install -g ts-node
 
 RUN apk add --no-cache postgresql-client
 
