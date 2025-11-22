@@ -7,7 +7,23 @@
  *                              |___/
  */
 
-export { ObjectMetadata } from './decorators/object-metadata.decorator';
-export type { ApplicationConfig } from './types/application-config';
-export type { ServerlessFunctionConfig } from './types/serverless-function-config';
-export type { SyncableEntityOptions } from './types/syncable-entity-options.type';
+export type { ApplicationConfig } from './application-config';
+export type {
+  ActorField,
+  AddressField,
+  CurrencyField,
+  EmailsField,
+  FullNameField,
+  LinksField,
+  PhonesField,
+  RichTextField,
+} from './field-metadata/composite-fields';
+export { FieldType } from './field-metadata/field-type';
+export { Field } from './field-metadata/field.decorator';
+export { OnDeleteAction } from './field-metadata/on-delete-action';
+export { RelationType } from './field-metadata/relation-type';
+export { Relation } from './field-metadata/relation.decorator';
+export { Object } from './object-metadata/object.decorator';
+export { STANDARD_OBJECT_UNIVERSAL_IDENTIFIERS } from './object-metadata/standard-object-ids';
+export type { ServerlessFunctionConfig } from './serverless-function-config';
+export type { SyncableEntityOptions } from './syncable-entity-options.type';

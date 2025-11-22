@@ -74,6 +74,11 @@ msgstr "Folder ulubionych"
 msgid "A group of related messages (e.g. email thread, chat thread)"
 msgstr "Grupa powiązanych wiadomości (np. wątek e-mail, wątek czatu)"
 
+#. js-lingui-id: 1Pylbk
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-or-relation-flat-field-join-column-name.util.ts
+msgid "A many to one relation field should always declare a join column"
+msgstr ""
+
 #. js-lingui-id: vZj1Xc
 #: src/modules/messaging/common/standard-objects/message.workspace-entity.ts
 msgid "A message sent or received through a messaging channel (email, chat, etc.)"
@@ -88,6 +93,11 @@ msgstr "Notatka"
 #: src/modules/note/standard-objects/note-target.workspace-entity.ts
 msgid "A note target"
 msgstr "Cel notatki"
+
+#. js-lingui-id: MtcxLV
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-or-relation-flat-field-join-column-name.util.ts
+msgid "A one to many relation field should never declare a join column"
+msgstr ""
 
 #. js-lingui-id: Io42ej
 #: src/modules/person/standard-objects/person.workspace-entity.ts
@@ -166,6 +176,11 @@ msgstr "Wymagana akcja w celu zapobieżenia usunięciu przestrzeni roboczej"
 msgid "Action Needed to Reset Password"
 msgstr "Wymagana akcja do zresetowania hasła"
 
+#. js-lingui-id: 8Q5bRY
+#: src/engine/core-modules/auth/services/reset-password.service.ts
+msgid "Action Needed to Set Password"
+msgstr "Wymagana akcja ustawienia hasła"
+
 #. js-lingui-id: 52fA3U
 #: src/engine/workspace-manager/workspace-migration-v2/workspace-migration-builder-v2/validators/services/flat-field-metadata-validator.service.ts
 msgid "Active fields cannot be deleted"
@@ -203,6 +218,7 @@ msgid "Aggregated / filtered event to be displayed on the timeline"
 msgstr "Zagregowane / filtrowane zdarzenie do wyświetlenia na osi czasu"
 
 #. js-lingui-id: pdOYzu
+#: src/engine/workspace-manager/standard-objects-prefill-data/views/workspace-members-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/workflows-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/workflow-versions-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/workflow-runs-all.view.ts
@@ -210,9 +226,12 @@ msgstr "Zagregowane / filtrowane zdarzenie do wyświetlenia na osi czasu"
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/people-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/opportunities-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/notes-all.view.ts
+#: src/engine/workspace-manager/standard-objects-prefill-data/views/messages-all.view.ts
+#: src/engine/workspace-manager/standard-objects-prefill-data/views/message-threads-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/dashboards-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/custom-all.view.ts
 #: src/engine/workspace-manager/standard-objects-prefill-data/views/companies-all.view.ts
+#: src/engine/workspace-manager/standard-objects-prefill-data/views/calendar-events-all.view.ts
 msgid "All {objectLabelPlural}"
 msgstr "Wszystkie {objectLabelPlural}"
 
@@ -297,6 +316,11 @@ msgstr "Przydzielony"
 #: src/modules/workspace-member/standard-objects/workspace-member.workspace-entity.ts
 msgid "Associated User Id"
 msgstr "Identyfikator powiązanego użytkownika"
+
+#. js-lingui-id: scLx/y
+#: src/modules/messaging/message-folder-manager/query-hooks/message-folder-update-one.pre-query.hook.ts
+msgid "At least one folder must be synced."
+msgstr ""
 
 #. js-lingui-id: K9efby
 #: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-relation-creation-payload.util.ts
@@ -584,10 +608,10 @@ msgstr "Nie można połączyć się z {connectFieldName}. Nie znaleziono unikaln
 msgid "Can't impersonate user via api key"
 msgstr "Nie można się podszywać pod użytkownika za pomocą klucza API."
 
-#. js-lingui-id: 874/Xl
+#. js-lingui-id: vxbVwc
 #: src/modules/workflow/workflow-trigger/utils/assert-version-can-be-activated.util.ts
-msgid "Cannot activate non-draft or non-deactivated version"
-msgstr ""
+msgid "Cannot activate non-draft or non-last-published version"
+msgstr "Nie można aktywować wersji innej niż robocza lub ostatnia opublikowana"
 
 #. js-lingui-id: LIPsWu
 #: src/modules/workflow/common/workspace-services/workflow-version-validation.workspace-service.ts
@@ -606,7 +630,6 @@ msgstr "Nie można usunąć konta: jesteś jedynym administratorem. Przypisz inn
 
 #. js-lingui-id: AQyr9X
 #: src/engine/workspace-manager/workspace-migration-v2/workspace-migration-builder-v2/validators/services/flat-field-metadata-validator.service.ts
-#: src/engine/metadata-modules/field-metadata/services/field-metadata.service.ts
 msgid "Cannot delete, please update the label identifier field first"
 msgstr "Nie można usunąć, proszę najpierw zaktualizować pole identyfikatora etykiety"
 
@@ -620,10 +643,15 @@ msgstr "Nie można wyłączyć nieaktywnej wersji workflow"
 msgid "Cannot enable uniqueness due to existing duplicate values. Please review and fix your data first (including soft deleted records)."
 msgstr "Nie można włączyć unikalności z powodu istniejących duplikatów. Prosimy najpierw przejrzeć i poprawić dane (w tym rekordy miękko usunięte)."
 
+#. js-lingui-id: IDMgr/
+#: src/modules/workflow/workflow-trigger/workspace-services/workflow-trigger.workspace-service.ts
+msgid "Cannot have more than one active workflow version"
+msgstr "Nie można mieć więcej niż jednej aktywnej wersji workflow"
+
 #. js-lingui-id: PjZIyI
 #: src/modules/messaging/message-channel-manager/query-hooks/message-channel-update-one.pre-query.hook.ts
 msgid "Cannot update message channel while sync is ongoing. Please wait for the sync to complete."
-msgstr ""
+msgstr "Nie można zaktualizować kanału wiadomości, gdy synchronizacja nadal trwa. Proszę poczekać na zakończenie synchronizacji."
 
 #. js-lingui-id: 4DKo3U
 #: src/modules/workflow/common/workspace-services/workflow-version-validation.workspace-service.ts
@@ -784,6 +812,11 @@ msgstr "Nie można znaleźć metadanych powiązanych z polem indeksu"
 #: src/engine/workspace-manager/workspace-migration-v2/workspace-migration-builder-v2/validators/services/flat-index-metadata-validator.service.ts
 msgid "Could not find index related object metadata"
 msgstr "Nie można znaleźć metadanych powiązanych z obiektem indeksu"
+
+#. js-lingui-id: YzCaIm
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-or-relation-flat-field-join-column-name.util.ts
+msgid "Could not find relation field parent flat object"
+msgstr ""
 
 #. js-lingui-id: NCIYDF
 #: src/modules/workflow/common/standard-objects/workflow.workspace-entity.ts
@@ -984,10 +1017,20 @@ msgstr "Termin realizacji"
 msgid "Duplicated option {field}"
 msgstr "Zduplikowana opcja {field}"
 
+#. js-lingui-id: AcnTuz
+#: src/engine/core-modules/user/services/user.service.ts
+msgid "Email already in use"
+msgstr ""
+
 #. js-lingui-id: BBXuRb
 #: src/engine/core-modules/email-verification/email-verification-exception-filter.util.ts
 msgid "Email already verified."
 msgstr "E-mail został już zweryfikowany."
+
+#. js-lingui-id: LT5dFi
+#: src/engine/core-modules/user/services/user.service.ts
+msgid "Email can only be updated when you belong to a single workspace."
+msgstr ""
 
 #. js-lingui-id: xw6iqb
 #: src/engine/core-modules/auth/utils/auth-graphql-api-exception-handler.util.ts
@@ -1417,11 +1460,6 @@ msgstr "Nie znaleziono pola do zaktualizowania"
 msgid "Field used for full-text search"
 msgstr "Pole użyte do pełnotekstowego wyszukiwania"
 
-#. js-lingui-id: s3HtdT
-#: src/engine/metadata-modules/view-sort/exceptions/view-sort.exception.ts
-msgid "FieldMetadataId is required"
-msgstr "FieldMetadataId jest wymagane"
-
 #. js-lingui-id: Sof2+k
 #: src/engine/metadata-modules/view-field/exceptions/view-field.exception.ts
 msgid "FieldMetadataId is required to create a view field."
@@ -1670,6 +1708,11 @@ msgstr "Nieprawidłowe wprowadzenie metadanych obiektu"
 msgid "Invalid relation creation payload"
 msgstr "Nieprawidłowe dane wejściowe tworzenia powiązania"
 
+#. js-lingui-id: iWv3nK
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-or-relation-flat-field-metadata.util.ts
+msgid "Invalid relation field target"
+msgstr ""
+
 #. js-lingui-id: ApP70c
 #: src/modules/workflow/workflow-trigger/utils/assert-version-can-be-activated.util.ts
 msgid "Invalid setting type provided in cron trigger"
@@ -1689,16 +1732,6 @@ msgstr "Nieprawidłowy uuid {id}"
 #: src/engine/core-modules/two-factor-authentication/two-factor-authentication-exception.filter.ts
 msgid "Invalid verification code. Please try again."
 msgstr "Nieprawidłowy kod weryfikacyjny. Proszę spróbować ponownie."
-
-#. js-lingui-id: 8xkULN
-#: src/engine/metadata-modules/view-sort/exceptions/view-sort.exception.ts
-msgid "Invalid view sort data"
-msgstr "Nieprawidłowe dane sortowania widoku"
-
-#. js-lingui-id: I0OzaR
-#: src/engine/metadata-modules/view-sort/exceptions/view-sort.exception.ts
-msgid "Invalid view sort data for view sort id: {id}"
-msgstr "Nieprawidłowe dane sortowania widoku dla ID sortowania widoku: {id}"
 
 #. js-lingui-id: grHYXZ
 #: src/modules/calendar/common/standard-objects/calendar-event.workspace-entity.ts
@@ -1842,7 +1875,7 @@ msgstr "Język"
 #: src/modules/connected-account/standard-objects/connected-account.workspace-entity.ts
 #: src/modules/connected-account/standard-objects/connected-account.workspace-entity.ts
 msgid "Last credentials refreshed at"
-msgstr ""
+msgstr "Ostatnie odświeżenie danych uwierzytelniających: "
 
 #. js-lingui-id: WvYp6o
 #: src/modules/workflow/common/standard-objects/workflow.workspace-entity.ts
@@ -1921,7 +1954,7 @@ msgstr "Marzec"
 #. js-lingui-id: hw7Mwk
 #: src/engine/api/common/common-query-runners/common-create-many-query-runner/common-create-many-query-runner.service.ts
 msgid "Maximum number of records to upsert is {QUERY_MAX_RECORDS}."
-msgstr ""
+msgstr "Maksymalna liczba rekordów do uaktualnienia to {QUERY_MAX_RECORDS}."
 
 #. js-lingui-id: 3JzsDb
 #: src/engine/api/graphql/graphql-query-runner/group-by/resolvers/utils/format-result-with-group-by-dimension-values.util.ts
@@ -1973,7 +2006,7 @@ msgstr "Skojarzenia wiadomości kanału wiadomości"
 #. js-lingui-id: LOU3x5
 #: src/modules/messaging/message-channel-manager/query-hooks/message-channel-update-one.pre-query.hook.ts
 msgid "Message channel not found"
-msgstr ""
+msgstr "Kanał wiadomości nie został znaleziony"
 
 #. js-lingui-id: k7LXPQ
 #: src/modules/messaging/common/standard-objects/message-channel.workspace-entity.ts
@@ -2003,6 +2036,11 @@ msgstr "Folder wiadomości"
 #: src/modules/messaging/common/standard-objects/message-channel.workspace-entity.ts
 msgid "Message folder import policy"
 msgstr "Polityka importu folderu wiadomości"
+
+#. js-lingui-id: aIgrkW
+#: src/modules/messaging/message-folder-manager/query-hooks/message-folder-update-one.pre-query.hook.ts
+msgid "Message folder not found"
+msgstr ""
 
 #. js-lingui-id: p4ANpY
 #: src/modules/messaging/common/standard-objects/message-folder.workspace-entity.ts
@@ -2117,11 +2155,6 @@ msgstr "Ładunki tworzenia relacji morf muszą zawierać wyłącznie relację do
 msgid "Morph relation creation payloads must only contain relation to the same object metadata"
 msgstr "Ładunki tworzenia relacji morf muszą zawierać wyłącznie relację do tych samych metadanych obiektu"
 
-#. js-lingui-id: DsdcRG
-#: src/engine/metadata-modules/flat-field-metadata/services/flat-field-metadata-type-validator.service.ts
-msgid "Morph relation fields are disabled for your workspace"
-msgstr "Pola relacji Morph są wyłączone dla Twojego środowiska pracy"
-
 #. js-lingui-id: Wu/pkS
 #: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-enum-flat-field-metadata.util.ts
 msgid "Multi-select field default value must be an array"
@@ -2153,20 +2186,20 @@ msgstr "Nazwa"
 msgid "Name \"{computedMetadataNameFromLabel}\" cannot be the same on both side of the relation"
 msgstr "Nazwa \"{computedMetadataNameFromLabel}\" nie może być taka sama po obu stronach relacji"
 
-#. js-lingui-id: Ge9TXE
+#. js-lingui-id: 2m6Fru
 #: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name-availability.util.ts
-msgid "Name \"{flatFieldMetadataName}\" is not available"
-msgstr "Nazwa \"{flatFieldMetadataName}\" jest niedostępna"
+msgid "Name \"{name}\" is not available"
+msgstr ""
 
-#. js-lingui-id: h8ic2G
+#. js-lingui-id: U8mbyw
 #: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name-availability.util.ts
-msgid "Name \"{flatFieldMetadataName}\" is not available as it is already used by another field"
-msgstr "Nazwa \"{flatFieldMetadataName}\" jest niedostępna, ponieważ jest już używana przez inne pole"
+msgid "Name \"{name}\" is not available as it is already used by another field"
+msgstr ""
 
-#. js-lingui-id: Q2loDF
-#: src/engine/metadata-modules/object-metadata/services/object-metadata-field-relation.service.ts
-msgid "Name \"{name}\" is not available."
-msgstr "Nazwa \"{name}\" jest niedostępna."
+#. js-lingui-id: dBDpp2
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name-availability.util.ts
+msgid "Name \"{name}\" is not available as it is already used by join column name"
+msgstr ""
 
 #. js-lingui-id: RGz1nY
 #: src/engine/metadata-modules/field-metadata/services/field-metadata-validation.service.ts
@@ -2213,6 +2246,11 @@ msgstr "Nazwa powinna być w formacie camelCase"
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name-and-labels.util.ts
 msgid "Names are not synced with labels"
 msgstr "Nazwy nie są zsynchronizowane z etykietami"
+
+#. js-lingui-id: TYhxR+
+#: src/engine/core-modules/user/services/user.service.ts
+msgid "New email must be different from current email"
+msgstr ""
 
 #. js-lingui-id: hQQZse
 #: src/modules/workflow/workflow-trigger/utils/assert-version-can-be-activated.util.ts
@@ -2583,7 +2621,7 @@ msgstr "ID rozmieszczenia strony"
 #: src/modules/messaging/common/standard-objects/message-folder.workspace-entity.ts
 #: src/modules/messaging/common/standard-objects/message-folder.workspace-entity.ts
 msgid "Parent Folder ID"
-msgstr ""
+msgstr "ID Folderu Rodzica"
 
 #. js-lingui-id: wT0H4O
 #: src/engine/core-modules/auth/services/sign-in-up.service.ts
@@ -2593,22 +2631,22 @@ msgstr "Hasło jest zbyt słabe"
 #. js-lingui-id: l6qKfi
 #: src/modules/messaging/common/standard-objects/message-folder.workspace-entity.ts
 msgid "Pending action for folder sync"
-msgstr ""
+msgstr "Oczekiwana akcja dla synchronizacji folderu"
 
 #. js-lingui-id: ttZgHv
 #: src/modules/messaging/common/standard-objects/message-channel.workspace-entity.ts
 msgid "Pending action for group emails"
-msgstr ""
+msgstr "Oczekiwana akcja dla wiadomości grupowych"
 
 #. js-lingui-id: 5aGQev
 #: src/modules/messaging/common/standard-objects/message-channel.workspace-entity.ts
 msgid "Pending group emails action"
-msgstr ""
+msgstr "Oczekujące działanie dla grupowych e-maili"
 
 #. js-lingui-id: 6jM9pB
 #: src/modules/messaging/common/standard-objects/message-folder.workspace-entity.ts
 msgid "Pending Sync Action"
-msgstr ""
+msgstr "Oczekujące działanie synchronizacji"
 
 #. js-lingui-id: 1wdjme
 #: src/modules/person/standard-objects/person.workspace-entity.ts
@@ -2654,6 +2692,11 @@ msgstr "Telefony"
 #: src/engine/core-modules/imap-smtp-caldav-connection/services/imap-smtp-caldav-connection-validator.service.ts
 msgid "Please check your connection settings. Make sure the server host, port, and password are correct."
 msgstr "Sprawdź ustawienia połączenia. Upewnij się, że host serwera, port i hasło są prawidłowe."
+
+#. js-lingui-id: mqzu5F
+#: src/engine/core-modules/email-verification/services/email-verification.service.ts
+msgid "Please confirm your updated email"
+msgstr ""
 
 #. js-lingui-id: v0iiWr
 #: src/engine/core-modules/webhook/webhook.service.ts
@@ -2748,17 +2791,6 @@ msgstr "Publiczny URL domeny nie jest zdefiniowany. Ustaw zmienną środowiskow�
 #: src/modules/messaging/common/standard-objects/message.workspace-entity.ts
 msgid "Received At"
 msgstr "Odebrano"
-
-#. js-lingui-id: x93onj
-#: src/engine/metadata-modules/view-field/services/view-field.service.ts
-#: src/engine/metadata-modules/view-field/services/view-field.service.ts
-msgid "Record text must be in first position of the view."
-msgstr "Tekst zapisu musi znajdować się na pierwszej pozycji w widoku."
-
-#. js-lingui-id: KGmwY/
-#: src/engine/metadata-modules/view-field/services/view-field.service.ts
-msgid "Record text must stay visible."
-msgstr "Tekst zapisu musi pozostać widoczny."
 
 #. js-lingui-id: 9gXJw8
 #: src/modules/calendar/common/standard-objects/calendar-channel-event-association.workspace-entity.ts
@@ -3001,16 +3033,6 @@ msgstr "Temat"
 msgid "Sunday"
 msgstr "Niedziela"
 
-#. js-lingui-id: VuvnTL
-#: src/modules/messaging/common/standard-objects/message-channel.workspace-entity.ts
-msgid "Sync all folders"
-msgstr ""
-
-#. js-lingui-id: 9PsZjo
-#: src/modules/messaging/common/standard-objects/message-channel.workspace-entity.ts
-msgid "Sync all folders including new ones"
-msgstr ""
-
 #. js-lingui-id: oyJYg7
 #: src/modules/messaging/common/standard-objects/message-folder.workspace-entity.ts
 #: src/modules/messaging/common/standard-objects/message-folder.workspace-entity.ts
@@ -3243,6 +3265,11 @@ msgstr "Nie znaleziono domyślnej roli dla tego obszaru roboczego. Skontaktuj si
 #: src/modules/workflow/common/standard-objects/workflow-run.workspace-entity.ts
 msgid "The executor of the workflow"
 msgstr "Executor przepływu pracy"
+
+#. js-lingui-id: o6DGfJ
+#: src/engine/core-modules/workspace/services/workspace.service.ts
+msgid "The field \"{field}\" cannot be updated. Please contact your workspace administrator."
+msgstr "Pole \"{field}\" nie może zostać zaktualizowane. Proszę skontaktować się z administratorem obszaru roboczego."
 
 #. js-lingui-id: LdhPiK
 #: src/engine/metadata-modules/object-permission/field-permission/field-permission.service.ts
@@ -3518,22 +3545,11 @@ msgstr "Typ"
 msgid "Type (deprecated)"
 msgstr "Typ (przestarzały)"
 
-#. js-lingui-id: RBJNRI
-#: src/engine/metadata-modules/field-metadata/services/field-metadata.service.ts
-#: src/engine/metadata-modules/field-metadata/services/field-metadata.service.ts
-msgid "Unique field cannot have a default value"
-msgstr "Unikalne pole nie może mieć wartości domyślnej"
-
 #. js-lingui-id: WWSSTx
 #: src/engine/workspace-manager/workspace-migration-v2/workspace-migration-builder-v2/validators/services/flat-index-metadata-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration-v2/workspace-migration-builder-v2/validators/services/flat-index-metadata-validator.service.ts
 msgid "Unique index cannot be created for field {fieldName} of type {fieldType}"
 msgstr "Nie można utworzyć unikalnego indeksu dla pola {fieldName} o typie {fieldType}"
-
-#. js-lingui-id: rtir7c
-#: src/engine/metadata-modules/view-group/exceptions/view-group.exception.ts
-msgid "unknown"
-msgstr ""
 
 #. js-lingui-id: EBZdX5
 #: src/modules/workflow/workflow-trigger/utils/compute-cron-pattern-from-schedule.ts
@@ -3581,6 +3597,12 @@ msgstr "Email użytkownika"
 #: src/modules/workspace-member/standard-objects/workspace-member.workspace-entity.ts
 msgid "User Id"
 msgstr "Identyfikator użytkownika"
+
+#. js-lingui-id: pMOjQa
+#: src/engine/core-modules/auth/token/services/access-token.service.ts
+#: src/engine/core-modules/auth/services/auth.service.ts
+msgid "User is not a member of the workspace."
+msgstr "Użytkownik nie jest członkiem środowiska pracy."
 
 #. js-lingui-id: B43Kks
 #: src/engine/core-modules/auth/services/sign-in-up.service.ts
@@ -3818,16 +3840,6 @@ msgstr "Nie znaleziono metadanych sumarycznych dla widoku Kanban."
 msgid "View not found"
 msgstr "Nie znaleziono widoku"
 
-#. js-lingui-id: znNExx
-#: src/engine/metadata-modules/view-sort/exceptions/view-sort.exception.ts
-msgid "View sort (id: {id}) not found"
-msgstr "Sortowanie widoku (ID: {id}) nie znaleziono"
-
-#. js-lingui-id: 3zMs+f
-#: src/engine/metadata-modules/view-sort/exceptions/view-sort.exception.ts
-msgid "View sort not found"
-msgstr "Sortowanie widoku nie znaleziono"
-
 #. js-lingui-id: toB/08
 #: src/engine/metadata-modules/flat-view/utils/from-delete-view-input-to-flat-view-or-throw.util.ts
 msgid "View to delete not found"
@@ -3853,11 +3865,6 @@ msgstr "Widok o tym samym identyfikatorze już istnieje"
 #: src/modules/favorite/standard-objects/favorite.workspace-entity.ts
 msgid "ViewId"
 msgstr "IdWidoku"
-
-#. js-lingui-id: kpQRY2
-#: src/engine/metadata-modules/view-sort/exceptions/view-sort.exception.ts
-msgid "ViewId is required"
-msgstr "Wymagane jest ViewId"
 
 #. js-lingui-id: l88nXn
 #: src/engine/metadata-modules/view-field/exceptions/view-field.exception.ts
@@ -4136,11 +4143,6 @@ msgstr "Stanowisko członka przestrzeni roboczej"
 msgid "Workspace Members"
 msgstr "Członkowie Przestrzeni Roboczej"
 
-#. js-lingui-id: bBr+RW
-#: src/engine/metadata-modules/view-sort/exceptions/view-sort.exception.ts
-msgid "WorkspaceId is required"
-msgstr "Wymagane jest WorkspaceId"
-
 #. js-lingui-id: kjLpTn
 #: src/engine/metadata-modules/view-field/exceptions/view-field.exception.ts
 msgid "WorkspaceId is required to create a view field."
@@ -4216,24 +4218,34 @@ msgid "You cannot set permissions on system objects as they are managed by the p
 msgstr "Nie możesz ustawić uprawnień na obiektach systemowych, ponieważ są zarządzane przez platformę."
 
 #. js-lingui-id: EFQeXU
-#: src/engine/guards/settings-permissions.guard.ts
+#: src/engine/guards/settings-permission.guard.ts
 msgid "You do not have permission to access this feature. Please contact your workspace administrator for access."
 msgstr "Nie masz uprawnień do dostępu do tej funkcji. Skontaktuj się z administratorem obszaru roboczego, aby uzyskać dostęp."
+
+#. js-lingui-id: P69VwK
+#: src/engine/core-modules/user/user.resolver.ts
+msgid "You do not have permission to delete this user from the workspace. Please contact your workspace administrator for access."
+msgstr "Nie masz uprawnień do usunięcia tego użytkownika z obszaru roboczego. Skontaktuj się z administratorem środowiska pracy, aby uzyskać dostęp."
 
 #. js-lingui-id: +2vVRB
 #: src/engine/guards/impersonate-permission.guard.ts
 msgid "You do not have permission to impersonate users. Please contact your workspace administrator for access."
 msgstr "Nie masz uprawnień do podszywania się pod użytkowników. Skontaktuj się z administratorem obszaru roboczego, aby uzyskać dostęp."
 
-#. js-lingui-id: k7P8yU
+#. js-lingui-id: 1dsy9v
 #: src/engine/core-modules/workspace/services/workspace.service.ts
-msgid "You do not have permission to manage security settings. Please contact your workspace administrator."
-msgstr "Nie masz uprawnień do zarządzania ustawieniami bezpieczeństwa. Skontaktuj się z administratorem obszaru roboczego."
+msgid "You do not have permission to update these fields: {fieldsList}. Please contact your workspace administrator."
+msgstr "Nie masz uprawnień do aktualizacji tych pól: {fieldsList}. Proszę skontaktować się z administratorem obszaru roboczego."
 
-#. js-lingui-id: svchJc
-#: src/engine/core-modules/workspace/services/workspace.service.ts
-msgid "You do not have permission to manage workspace settings. Please contact your workspace administrator."
-msgstr "Nie masz uprawnień do zarządzania ustawieniami obszaru roboczego. Skontaktuj się z administratorem obszaru roboczego."
+#. js-lingui-id: M1he8p
+#: src/engine/metadata-modules/view/exceptions/view.exception.ts
+msgid "You don't have permission to create workspace-level views."
+msgstr "Nie masz uprawnień do tworzenia widoków na poziomie obszaru roboczego."
+
+#. js-lingui-id: QmL9y9
+#: src/engine/metadata-modules/view/exceptions/view.exception.ts
+msgid "You don't have permission to modify this view."
+msgstr "Nie masz uprawnień do modyfikowania tego widoku."
 
 #. js-lingui-id: z+7x/s
 #: src/engine/core-modules/auth/utils/auth-graphql-api-exception-handler.util.ts

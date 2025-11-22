@@ -1,12 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 import { UUIDScalarType } from 'src/engine/api/graphql/workspace-schema-builder/graphql-types/scalars';
-import { ServerlessFunctionDTO } from 'src/engine/metadata-modules/serverless-function/dtos/serverless-function.dto';
+import { ApplicationVariableEntityDTO } from 'src/engine/core-modules/applicationVariable/dtos/application-variable.dto';
 import { AgentDTO } from 'src/engine/metadata-modules/agent/dtos/agent.dto';
 import { ObjectMetadataDTO } from 'src/engine/metadata-modules/object-metadata/dtos/object-metadata.dto';
-import { ApplicationVariableEntityDTO } from 'src/engine/core-modules/applicationVariable/dtos/application-variable.dto';
+import { ServerlessFunctionDTO } from 'src/engine/metadata-modules/serverless-function/dtos/serverless-function.dto';
 
 @ObjectType('Application')
 export class ApplicationDTO {
@@ -26,6 +26,14 @@ export class ApplicationDTO {
   @IsString()
   @Field()
   version: string;
+
+  @IsString()
+  @Field()
+  universalIdentifier: string;
+
+  @Field(() => Boolean)
+  @IsBoolean()
+  canBeUninstalled: boolean;
 
   @Field(() => [AgentDTO])
   agents: AgentDTO[];

@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
-import { FieldMetadataType } from 'twenty-shared/types';
+import {
+  FieldMetadataType,
+  compositeTypeDefinitions,
+} from 'twenty-shared/types';
 import { capitalize } from 'twenty-shared/utils';
 import {
   type EntityManager,
@@ -12,13 +15,13 @@ import {
 } from 'typeorm';
 import { type DeepPartial } from 'typeorm/common/DeepPartial';
 import { v4 as uuidV4 } from 'uuid';
+import { STANDARD_OBJECT_IDS } from 'twenty-shared/metadata';
 
 import { type PartialFieldMetadata } from 'src/engine/workspace-manager/workspace-sync-metadata/interfaces/partial-field-metadata.interface';
 import { type PartialIndexMetadata } from 'src/engine/workspace-manager/workspace-sync-metadata/interfaces/partial-index-metadata.interface';
 import { type UpdaterOptions } from 'src/engine/workspace-manager/workspace-sync-metadata/interfaces/updater-options.interface';
 
 import { isFieldMetadataRelationOrMorphRelation } from 'src/engine/api/graphql/workspace-schema-builder/utils/is-field-metadata-relation-or-morph-relation.utils';
-import { compositeTypeDefinitions } from 'src/engine/metadata-modules/field-metadata/composite-types';
 import { type FieldMetadataComplexOption } from 'src/engine/metadata-modules/field-metadata/dtos/options.input';
 import { FieldMetadataEntity } from 'src/engine/metadata-modules/field-metadata/field-metadata.entity';
 import { isCompositeFieldMetadataType } from 'src/engine/metadata-modules/field-metadata/utils/is-composite-field-metadata-type.util';
@@ -471,6 +474,20 @@ export class WorkspaceMetadataUpdaterService {
         ...oldEntity,
         ...updateItem,
       };
+
+      // Do not update isSystem for workspaceMember
+      // TODO to remove after https://github.com/twentyhq/twenty/issues/15688
+      const isObjectMetadataUpdate = entityClass === ObjectMetadataEntity;
+
+      if (
+        isObjectMetadataUpdate &&
+        oldEntity?.standardId === STANDARD_OBJECT_IDS.workspaceMember &&
+        'isSystem' in updateItem &&
+        'isSystem' in oldEntity
+      ) {
+        (mergedUpdate as unknown as { isSystem: boolean }).isSystem =
+          oldEntity.isSystem as boolean;
+      }
 
       // Omit keys that we don't want to override
       keysToOmit.forEach((key) => {

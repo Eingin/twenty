@@ -224,7 +224,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:^24.7.2"
     axios: "npm:^1.12.2"
-    twenty-sdk: "npm:0.0.3-alpha"
   languageName: unknown
   linkType: soft
 
@@ -255,13 +254,6 @@ __metadata:
   version: 1.1.0
   resolution: "proxy-from-env@npm:1.1.0"
   checksum: 10c0/fe7dd8b1bdbbbea18d1459107729c3e4a2243ca870d26d34c2c1bcd3e4425b7bcc5112362df2d93cc7fb9746f6142b5e272fd1cc5c86ddf8580175186f6ad42b
-  languageName: node
-  linkType: hard
-
-"twenty-sdk@npm:0.0.3-alpha":
-  version: 0.0.3-alpha
-  resolution: "twenty-sdk@npm:0.0.3-alpha"
-  checksum: 10c0/e8028f47767e3fa6318100f26542e0477b68e36d363df5f3a6c20d8442951fecba60089d07e97224b0b3533a729bbd3526cca08728079577cfa204dbffaecb03
   languageName: node
   linkType: hard
 

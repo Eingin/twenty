@@ -14,7 +14,7 @@ import styled from '@emotion/styled';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
 
-import { isObjectMetadataReadOnly } from '@/object-record/read-only/utils/isObjectMetadataReadOnly';
+import { isObjectMetadataSettingsReadOnly } from '@/object-record/read-only/utils/isObjectMetadataSettingsReadOnly';
 import { SettingsItemTypeTag } from '@/settings/components/SettingsItemTypeTag';
 import { activeTabIdComponentState } from '@/ui/layout/tab-list/states/activeTabIdComponentState';
 import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
@@ -57,17 +57,17 @@ export const SettingsObjectDetailPage = () => {
   const { t } = useLingui();
 
   const { objectNamePlural = '' } = useParams();
-  const { findActiveObjectMetadataItemByNamePlural } =
+  const { findObjectMetadataItemByNamePlural } =
     useFilteredObjectMetadataItems();
 
   const [updatedObjectNamePlural, setUpdatedObjectNamePlural] = useRecoilState(
     updatedObjectNamePluralState,
   );
   const objectMetadataItem =
-    findActiveObjectMetadataItemByNamePlural(objectNamePlural) ??
-    findActiveObjectMetadataItemByNamePlural(updatedObjectNamePlural);
+    findObjectMetadataItemByNamePlural(objectNamePlural) ??
+    findObjectMetadataItemByNamePlural(updatedObjectNamePlural);
 
-  const readonly = isObjectMetadataReadOnly({ objectMetadataItem });
+  const readonly = isObjectMetadataSettingsReadOnly({ objectMetadataItem });
 
   const activeTabId = useRecoilComponentValue(
     activeTabIdComponentState,

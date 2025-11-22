@@ -19,6 +19,9 @@ import { MigrateAttachmentTypeToFileCategoryCommand } from 'src/database/command
 import { MigrateChannelPartialFullSyncStagesCommand } from 'src/database/commands/upgrade-version-command/1-10/1-10-migrate-channel-partial-full-sync-stages.command';
 import { RegenerateSearchVectorsCommand } from 'src/database/commands/upgrade-version-command/1-10/1-10-regenerate-search-vectors.command';
 import { SeedDashboardViewCommand } from 'src/database/commands/upgrade-version-command/1-10/1-10-seed-dashboard-view.command';
+import { CleanOrphanedRoleTargetsCommand } from 'src/database/commands/upgrade-version-command/1-11/1-11-clean-orphaned-role-targets.command';
+import { CleanOrphanedUserWorkspacesCommand } from 'src/database/commands/upgrade-version-command/1-11/1-11-clean-orphaned-user-workspaces.command';
+import { CreateTwentyStandardApplicationCommand } from 'src/database/commands/upgrade-version-command/1-11/1-11-create-twenty-standard-application.command';
 import { FixLabelIdentifierPositionAndVisibilityCommand } from 'src/database/commands/upgrade-version-command/1-6/1-6-fix-label-identifier-position-and-visibility.command';
 import { BackfillWorkflowManualTriggerAvailabilityCommand } from 'src/database/commands/upgrade-version-command/1-7/1-7-backfill-workflow-manual-trigger-availability.command';
 import { DeduplicateUniqueFieldsCommand } from 'src/database/commands/upgrade-version-command/1-8/1-8-deduplicate-unique-fields.command';
@@ -30,6 +33,7 @@ import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twent
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { TwentyORMGlobalManager } from 'src/engine/twenty-orm/twenty-orm-global.manager';
 import { SyncWorkspaceMetadataCommand } from 'src/engine/workspace-manager/workspace-sync-metadata/commands/sync-workspace-metadata.command';
+import { SetStandardApplicationNotUninstallableCommand } from 'src/database/commands/upgrade-version-command/1-12/1-12-set-standard-application-not-uninstallable.command';
 
 @Command({
   name: 'upgrade',
@@ -69,6 +73,14 @@ export class UpgradeCommand extends UpgradeCommandRunner {
     protected readonly seedDashboardViewCommand: SeedDashboardViewCommand,
     protected readonly createViewKanbanFieldMetadataIdForeignKeyMigrationCommand: CreateViewKanbanFieldMetadataIdForeignKeyMigrationCommand,
     protected readonly flushWorkspaceCacheCommand: FlushCacheCommand,
+
+    // 1.11 Commands
+    protected readonly cleanOrphanedUserWorkspacesCommand: CleanOrphanedUserWorkspacesCommand,
+    protected readonly cleanOrphanedRoleTargetsCommand: CleanOrphanedRoleTargetsCommand,
+    protected readonly seedStandardApplicationsCommand: CreateTwentyStandardApplicationCommand,
+
+    // 1.12 Commands
+    protected readonlysetStandardApplicationNotUninstallableCommand: SetStandardApplicationNotUninstallableCommand,
   ) {
     super(
       workspaceRepository,
@@ -117,11 +129,28 @@ export class UpgradeCommand extends UpgradeCommandRunner {
       ],
     };
 
+    const commands_1110: VersionCommands = {
+      beforeSyncMetadata: [this.seedStandardApplicationsCommand],
+      afterSyncMetadata: [
+        this.cleanOrphanedUserWorkspacesCommand,
+        this.cleanOrphanedRoleTargetsCommand,
+      ],
+    };
+
+    const commands_1120: VersionCommands = {
+      beforeSyncMetadata: [],
+      afterSyncMetadata: [
+        this.readonlysetStandardApplicationNotUninstallableCommand,
+      ],
+    };
+
     this.allCommands = {
       '1.6.0': commands_160,
       '1.7.0': commands_170,
       '1.8.0': commands_180,
       '1.10.0': commands_1100,
+      '1.11.0': commands_1110,
+      '1.12.0': commands_1120,
     };
   }
 

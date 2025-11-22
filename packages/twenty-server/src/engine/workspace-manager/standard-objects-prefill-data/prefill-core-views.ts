@@ -10,13 +10,17 @@ import { ViewEntity } from 'src/engine/metadata-modules/view/entities/view.entit
 import { ViewKey } from 'src/engine/metadata-modules/view/enums/view-key.enum';
 import { ViewOpenRecordIn } from 'src/engine/metadata-modules/view/enums/view-open-record-in';
 import { ViewType } from 'src/engine/metadata-modules/view/enums/view-type.enum';
+import { ViewVisibility } from 'src/engine/metadata-modules/view/enums/view-visibility.enum';
 import { ViewOpenRecordInType } from 'src/engine/metadata-modules/view/types/view-open-record-in-type.type';
 import { type WorkspaceEntityManager } from 'src/engine/twenty-orm/entity-manager/workspace-entity-manager';
 import { shouldSeedWorkspaceFavorite } from 'src/engine/utils/should-seed-workspace-favorite';
 import { prefillWorkspaceFavorites } from 'src/engine/workspace-manager/standard-objects-prefill-data/prefill-workspace-favorites';
 import { type ViewDefinition } from 'src/engine/workspace-manager/standard-objects-prefill-data/types/view-definition.interface';
+import { calendarEventsAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/calendar-events-all.view';
 import { companiesAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/companies-all.view';
 import { dashboardsAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/dashboards-all.view';
+import { messageThreadsAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/message-threads-all.view';
+import { messagesAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/messages-all.view';
 import { notesAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/notes-all.view';
 import { opportunitiesAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/opportunities-all.view';
 import { opportunitiesByStageView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/opportunity-by-stage.view';
@@ -27,6 +31,7 @@ import { tasksByStatusView } from 'src/engine/workspace-manager/standard-objects
 import { workflowRunsAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/workflow-runs-all.view';
 import { workflowVersionsAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/workflow-versions-all.view';
 import { workflowsAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/workflows-all.view';
+import { workspaceMembersAllView } from 'src/engine/workspace-manager/standard-objects-prefill-data/views/workspace-members-all.view';
 
 type PrefillCoreViewsArgs = {
   coreDataSource: DataSource;
@@ -55,6 +60,10 @@ export const prefillCoreViews = async ({
     workflowVersionsAllView(objectMetadataItems, true),
     workflowRunsAllView(objectMetadataItems, true),
     dashboardsAllView(objectMetadataItems, true),
+    workspaceMembersAllView(objectMetadataItems, true),
+    messagesAllView(objectMetadataItems, true),
+    messageThreadsAllView(objectMetadataItems, true),
+    calendarEventsAllView(objectMetadataItems, true),
   ];
 
   const queryRunner = coreDataSource.createQueryRunner();
@@ -140,6 +149,7 @@ export const createCoreViews = async (
       kanbanAggregateOperationFieldMetadataId,
       workspaceId,
       anyFieldFilterValue: null,
+      visibility: ViewVisibility.WORKSPACE,
     }),
   );
 

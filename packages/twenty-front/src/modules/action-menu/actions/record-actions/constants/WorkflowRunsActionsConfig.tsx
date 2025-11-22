@@ -18,11 +18,44 @@ import {
 
 export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
   config: {
+    [WorkflowRunSingleRecordActionKeys.SEE_VERSION]: {
+      key: WorkflowRunSingleRecordActionKeys.SEE_VERSION,
+      label: msg`See version`,
+      shortLabel: msg`See version`,
+      position: 0,
+      isPinned: true,
+      type: ActionType.Standard,
+      scope: ActionScope.RecordSelection,
+      Icon: IconVersions,
+      shouldBeRegistered: () => true,
+      availableOn: [
+        ActionViewType.SHOW_PAGE,
+        ActionViewType.INDEX_PAGE_SINGLE_RECORD_SELECTION,
+      ],
+      component: <SeeVersionWorkflowRunSingleRecordAction />,
+    },
+
+    [WorkflowRunSingleRecordActionKeys.SEE_WORKFLOW]: {
+      key: WorkflowRunSingleRecordActionKeys.SEE_WORKFLOW,
+      label: msg`See workflow`,
+      shortLabel: msg`See workflow`,
+      position: 1,
+      isPinned: true,
+      type: ActionType.Standard,
+      scope: ActionScope.RecordSelection,
+      Icon: IconSettingsAutomation,
+      shouldBeRegistered: () => true,
+      availableOn: [
+        ActionViewType.SHOW_PAGE,
+        ActionViewType.INDEX_PAGE_SINGLE_RECORD_SELECTION,
+      ],
+      component: <SeeWorkflowWorkflowRunSingleRecordAction />,
+    },
     [WorkflowRunSingleRecordActionKeys.STOP]: {
       key: WorkflowRunSingleRecordActionKeys.STOP,
       label: msg`Stop`,
       shortLabel: msg`Stop`,
-      position: 0,
+      position: 2,
       isPinned: true,
       type: ActionType.Standard,
       scope: ActionScope.RecordSelection,
@@ -42,38 +75,6 @@ export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
       ],
       component: <StopWorkflowRunSingleRecordAction />,
     },
-    [WorkflowRunSingleRecordActionKeys.SEE_WORKFLOW]: {
-      key: WorkflowRunSingleRecordActionKeys.SEE_WORKFLOW,
-      label: msg`See workflow`,
-      shortLabel: msg`See workflow`,
-      position: 1,
-      isPinned: true,
-      type: ActionType.Standard,
-      scope: ActionScope.RecordSelection,
-      Icon: IconSettingsAutomation,
-      shouldBeRegistered: () => true,
-      availableOn: [
-        ActionViewType.SHOW_PAGE,
-        ActionViewType.INDEX_PAGE_SINGLE_RECORD_SELECTION,
-      ],
-      component: <SeeWorkflowWorkflowRunSingleRecordAction />,
-    },
-    [WorkflowRunSingleRecordActionKeys.SEE_VERSION]: {
-      key: WorkflowRunSingleRecordActionKeys.SEE_VERSION,
-      label: msg`See version`,
-      shortLabel: msg`See version`,
-      position: 2,
-      isPinned: true,
-      type: ActionType.Standard,
-      scope: ActionScope.RecordSelection,
-      Icon: IconVersions,
-      shouldBeRegistered: () => true,
-      availableOn: [
-        ActionViewType.SHOW_PAGE,
-        ActionViewType.INDEX_PAGE_SINGLE_RECORD_SELECTION,
-      ],
-      component: <SeeVersionWorkflowRunSingleRecordAction />,
-    },
   },
   actionKeys: [
     SingleRecordActionKeys.ADD_TO_FAVORITES,
@@ -90,6 +91,7 @@ export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
     NoSelectionRecordActionKeys.GO_TO_PEOPLE,
     NoSelectionRecordActionKeys.GO_TO_COMPANIES,
     NoSelectionRecordActionKeys.GO_TO_OPPORTUNITIES,
+    NoSelectionRecordActionKeys.GO_TO_DASHBOARDS,
     NoSelectionRecordActionKeys.GO_TO_SETTINGS,
     NoSelectionRecordActionKeys.GO_TO_TASKS,
     NoSelectionRecordActionKeys.GO_TO_NOTES,
@@ -146,14 +148,17 @@ export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
     [NoSelectionRecordActionKeys.GO_TO_OPPORTUNITIES]: {
       position: 15,
     },
-    [NoSelectionRecordActionKeys.GO_TO_SETTINGS]: {
+    [NoSelectionRecordActionKeys.GO_TO_DASHBOARDS]: {
       position: 16,
     },
-    [NoSelectionRecordActionKeys.GO_TO_TASKS]: {
+    [NoSelectionRecordActionKeys.GO_TO_SETTINGS]: {
       position: 17,
     },
-    [NoSelectionRecordActionKeys.GO_TO_NOTES]: {
+    [NoSelectionRecordActionKeys.GO_TO_TASKS]: {
       position: 18,
+    },
+    [NoSelectionRecordActionKeys.GO_TO_NOTES]: {
+      position: 19,
     },
   },
 });

@@ -5,6 +5,7 @@ import {
   QUERY_MAX_RECORDS,
 } from 'twenty-shared/constants';
 import {
+  FieldMetadataRelationSettings,
   FieldMetadataType,
   ObjectRecord,
   RelationType,
@@ -14,7 +15,6 @@ import { FindOptionsRelations, In, ObjectLiteral } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { WorkspaceAuthContext } from 'src/engine/api/common/interfaces/workspace-auth-context.interface';
-import { FieldMetadataRelationSettings } from 'src/engine/metadata-modules/field-metadata/interfaces/field-metadata-settings.interface';
 
 import { CommonBaseQueryRunnerService } from 'src/engine/api/common/common-query-runners/common-base-query-runner.service';
 import {
@@ -29,10 +29,6 @@ import {
   CommonQueryNames,
   MergeManyQueryArgs,
 } from 'src/engine/api/common/types/common-query-args.type';
-import {
-  GraphqlQueryRunnerException,
-  GraphqlQueryRunnerExceptionCode,
-} from 'src/engine/api/graphql/graphql-query-runner/errors/graphql-query-runner.exception';
 import { buildColumnsToReturn } from 'src/engine/api/graphql/graphql-query-runner/utils/build-columns-to-return';
 import { buildColumnsToSelect } from 'src/engine/api/graphql/graphql-query-runner/utils/build-columns-to-select';
 import { hasRecordFieldValue } from 'src/engine/api/graphql/graphql-query-runner/utils/has-record-field-value.util';
@@ -99,7 +95,7 @@ export class CommonMergeManyQueryRunnerService extends CommonBaseQueryRunnerServ
     });
 
     await queryBuilder
-      .softDelete()
+      .delete()
       .whereInIds(idsToDelete)
       .returning(columnsToReturn)
       .execute();
@@ -134,9 +130,6 @@ export class CommonMergeManyQueryRunnerService extends CommonBaseQueryRunnerServ
     const recordsToMerge = await context.repository.find({
       where: { id: In(args.ids) },
       select: columnsToSelect,
-      ...(args.dryRun
-        ? { relations: args.selectedFieldsResult.relations }
-        : {}),
     });
 
     if (recordsToMerge.length !== args.ids.length) {
@@ -144,6 +137,23 @@ export class CommonMergeManyQueryRunnerService extends CommonBaseQueryRunnerServ
         'One or more records not found',
         CommonQueryRunnerExceptionCode.RECORD_NOT_FOUND,
       );
+    }
+
+    if (args.dryRun && args.selectedFieldsResult.relations) {
+      await this.processNestedRelationsHelper.processNestedRelations({
+        objectMetadataMaps: context.objectMetadataMaps,
+        parentObjectMetadataItem: context.objectMetadataItemWithFieldMaps,
+        parentObjectRecords: recordsToMerge as ObjectRecord[],
+        relations: args.selectedFieldsResult.relations as Record<
+          string,
+          FindOptionsRelations<ObjectLiteral>
+        >,
+        limit: QUERY_MAX_RECORDS,
+        authContext: context.authContext,
+        workspaceDataSource: context.workspaceDataSource,
+        rolePermissionConfig: context.rolePermissionConfig,
+        selectedFields: args.selectedFieldsResult.select,
+      });
     }
 
     return recordsToMerge as ObjectRecord[];
@@ -160,9 +170,9 @@ export class CommonMergeManyQueryRunnerService extends CommonBaseQueryRunnerServ
     );
 
     if (!priorityRecord) {
-      throw new GraphqlQueryRunnerException(
+      throw new CommonQueryRunnerException(
         'Priority record not found',
-        GraphqlQueryRunnerExceptionCode.RECORD_NOT_FOUND,
+        CommonQueryRunnerExceptionCode.RECORD_NOT_FOUND,
       );
     }
 
