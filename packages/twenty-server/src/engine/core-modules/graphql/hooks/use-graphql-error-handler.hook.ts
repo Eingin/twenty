@@ -248,6 +248,9 @@ export const useGraphQLErrorHandlerHook = <
     onValidate: ({ context, validateFn, params: { documentAST, schema } }) => {
       const errors = validateFn(schema, documentAST);
 
+      const userLocale = context.req.locale ?? SOURCE_LOCALE;
+      const i18n = options.i18nService.getI18nInstance(userLocale);
+
       if (Array.isArray(errors) && errors.length > 0) {
         const headers = context.req.headers;
         const currentMetadataVersion = context.req.workspaceMetadataVersion;
@@ -262,14 +265,18 @@ export const useGraphQLErrorHandlerHook = <
 
         if (
           requestMetadataVersion &&
+          isDefined(currentMetadataVersion) &&
           requestMetadataVersion !== `${currentMetadataVersion}`
         ) {
           options.metricsService.incrementCounter({
             key: MetricsKeys.SchemaVersionMismatch,
           });
+
           throw new GraphQLError(SCHEMA_MISMATCH_ERROR, {
             extensions: {
-              userFriendlyMessage: msg`Your workspace has been updated with a new data model. Please refresh the page.`,
+              userFriendlyMessage: i18n._(
+                msg`Your workspace has been updated with a new data model. Please refresh the page.`,
+              ),
             },
           });
         }
@@ -297,7 +304,9 @@ export const useGraphQLErrorHandlerHook = <
           throw new GraphQLError(APP_VERSION_MISMATCH_ERROR, {
             extensions: {
               code: APP_VERSION_MISMATCH_CODE,
-              userFriendlyMessage: msg`Your app version is out of date. Please refresh the page to continue.`,
+              userFriendlyMessage: i18n._(
+                msg`Your app version is out of date. Please refresh the page to continue.`,
+              ),
             },
           });
         }

@@ -42,7 +42,9 @@ const StyledContainer = styled.div`
 export const SettingsDataModelObjectIdentifiersForm = ({
   objectMetadataItem,
 }: SettingsDataModelObjectIdentifiersFormProps) => {
-  const readonly = isObjectMetadataReadOnly({ objectMetadataItem });
+  const readonly = isObjectMetadataReadOnly({
+    objectMetadataItem,
+  });
   const formConfig = useForm<SettingsDataModelObjectIdentifiersFormValues>({
     mode: 'onTouched',
     resolver: zodResolver(settingsDataModelObjectIdentifiersFormSchema),
@@ -52,10 +54,6 @@ export const SettingsDataModelObjectIdentifiersForm = ({
   const handleSave = async (
     formValues: SettingsDataModelObjectIdentifiersFormValues,
   ) => {
-    if (!formConfig.formState.isDirty) {
-      return;
-    }
-
     const result = await updateOneObjectMetadataItem({
       idToUpdate: objectMetadataItem.id,
       updatePayload: formValues,
@@ -86,7 +84,7 @@ export const SettingsDataModelObjectIdentifiersForm = ({
 
   const emptyOption: SelectOption<string | null> = {
     Icon: IconCircleOff,
-    label: 'None',
+    label: t`None`,
     value: null,
   };
 

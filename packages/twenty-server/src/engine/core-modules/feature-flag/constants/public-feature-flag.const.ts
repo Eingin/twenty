@@ -13,25 +13,6 @@ export type PublicFeatureFlag = {
 
 export const PUBLIC_FEATURE_FLAGS: PublicFeatureFlag[] = [
   {
-    key: FeatureFlagKey.IS_IMAP_SMTP_CALDAV_ENABLED,
-    metadata: {
-      label: 'IMAP, SMTP, CalDAV',
-      description:
-        'Easily add email accounts from any provider that supports IMAP, send emails with SMTP (and soon, sync calendars with CalDAV)',
-      imagePath:
-        'https://twenty.com/images/lab/is-imap-smtp-caldav-enabled.png',
-    },
-  },
-  {
-    key: FeatureFlagKey.IS_MESSAGE_FOLDER_CONTROL_ENABLED,
-    metadata: {
-      label: 'Message Folder Control',
-      description: 'Control which folders are synced',
-      imagePath:
-        'https://twenty.com/images/lab/is-message-folder-control-enabled.png',
-    },
-  },
-  {
     key: FeatureFlagKey.IS_PAGE_LAYOUT_ENABLED,
     metadata: {
       label: 'Dashboards',
@@ -40,12 +21,11 @@ export const PUBLIC_FEATURE_FLAGS: PublicFeatureFlag[] = [
     },
   },
   {
-    key: FeatureFlagKey.IS_MORPH_RELATION_ENABLED,
+    key: FeatureFlagKey.IS_IF_ELSE_ENABLED,
     metadata: {
-      label: 'Morph Relations',
-      description:
-        'Create polymorphic relationships that can link to multiple object types',
-      imagePath: 'https://twenty.com/images/lab/is-morph-relation-enabled.png',
+      label: 'If/Else Workflow Node',
+      description: 'Enable if/else conditional branching in workflows',
+      imagePath: 'https://twenty.com/images/lab/is-if-else-enabled.png',
     },
   },
   ...(process.env.CLOUDFLARE_API_KEY

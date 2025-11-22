@@ -2,7 +2,8 @@ import { useRecoilCallback } from 'recoil';
 
 import { contextStoreCurrentViewIdComponentState } from '@/context-store/states/contextStoreCurrentViewIdComponentState';
 import { useRecoilComponentCallbackState } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentCallbackState';
-import { usePersistViewGroupRecords } from '@/views/hooks/internal/usePersistViewGroup';
+import { usePerformViewGroupAPIPersist } from '@/views/hooks/internal/usePerformViewGroupAPIPersist';
+import { useCanPersistViewChanges } from '@/views/hooks/useCanPersistViewChanges';
 import { useGetViewFromPrefetchState } from '@/views/hooks/useGetViewFromPrefetchState';
 import { type ViewGroup } from '@/views/types/ViewGroup';
 import { isDefined } from 'twenty-shared/utils';
@@ -10,7 +11,8 @@ import { isDeeplyEqual } from '~/utils/isDeeplyEqual';
 import { isUndefinedOrNull } from '~/utils/isUndefinedOrNull';
 
 export const useSaveCurrentViewGroups = () => {
-  const { createViewGroups, updateViewGroups } = usePersistViewGroupRecords();
+  const { canPersistChanges } = useCanPersistViewChanges();
+  const { performViewGroupAPIUpdate } = usePerformViewGroupAPIPersist();
 
   const { getViewFromPrefetchState } = useGetViewFromPrefetchState();
 
@@ -21,6 +23,10 @@ export const useSaveCurrentViewGroups = () => {
   const saveViewGroup = useRecoilCallback(
     ({ snapshot }) =>
       async (viewGroupToSave: ViewGroup) => {
+        if (!canPersistChanges) {
+          return;
+        }
+
         const currentViewId = snapshot
           .getLoadable(currentViewIdCallbackState)
           .getValue();
@@ -61,26 +67,34 @@ export const useSaveCurrentViewGroups = () => {
           return;
         }
 
-        await updateViewGroups([
+        await performViewGroupAPIUpdate([
           {
             input: {
               id: existingField.id,
               update: {
                 isVisible: viewGroupToSave.isVisible,
                 position: viewGroupToSave.position,
-                fieldMetadataId: viewGroupToSave.fieldMetadataId,
                 fieldValue: viewGroupToSave.fieldValue,
               },
             },
           },
         ]);
       },
-    [currentViewIdCallbackState, getViewFromPrefetchState, updateViewGroups],
+    [
+      canPersistChanges,
+      currentViewIdCallbackState,
+      getViewFromPrefetchState,
+      performViewGroupAPIUpdate,
+    ],
   );
 
   const saveViewGroups = useRecoilCallback(
     ({ snapshot }) =>
       async (viewGroupsToSave: ViewGroup[]) => {
+        if (!canPersistChanges) {
+          return;
+        }
+
         const currentViewId = snapshot
           .getLoadable(currentViewIdCallbackState)
           .getValue();
@@ -129,7 +143,6 @@ export const useSaveCurrentViewGroups = () => {
                 update: {
                   isVisible: viewGroupToSave.isVisible,
                   position: viewGroupToSave.position,
-                  fieldMetadataId: viewGroupToSave.fieldMetadataId,
                   fieldValue: viewGroupToSave.fieldValue,
                 },
               },
@@ -137,29 +150,17 @@ export const useSaveCurrentViewGroups = () => {
           })
           .filter(isDefined);
 
-        const viewGroupsToCreate = viewGroupsToSave.filter(
-          (viewFieldToSave) =>
-            !currentViewGroups.some(
-              (currentViewGroup) =>
-                currentViewGroup.fieldValue === viewFieldToSave.fieldValue,
-            ),
-        );
+        if (!isDefined(view.mainGroupByFieldMetadataId)) {
+          throw new Error('mainGroupByFieldMetadataId is required');
+        }
 
-        await Promise.all([
-          createViewGroups({
-            inputs: viewGroupsToCreate.map(({ __typename, ...viewGroup }) => ({
-              ...viewGroup,
-              viewId: view.id,
-            })),
-          }),
-          updateViewGroups(viewGroupsToUpdate),
-        ]);
+        await performViewGroupAPIUpdate(viewGroupsToUpdate);
       },
     [
-      createViewGroups,
+      canPersistChanges,
       currentViewIdCallbackState,
       getViewFromPrefetchState,
-      updateViewGroups,
+      performViewGroupAPIUpdate,
     ],
   );
 

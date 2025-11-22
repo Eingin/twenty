@@ -18,19 +18,22 @@ import {
   useGetAuthTokensFromLoginTokenMutation,
   useGetAuthTokensFromOtpMutation,
   useGetLoginTokenFromCredentialsMutation,
-  useGetLoginTokenFromEmailVerificationTokenMutation,
-  useGetWorkspaceAgnosticTokenFromEmailVerificationTokenMutation,
   useSignInMutation,
   useSignUpInWorkspaceMutation,
   useSignUpMutation,
+  useVerifyEmailAndGetLoginTokenMutation,
+  useVerifyEmailAndGetWorkspaceAgnosticTokenMutation,
   type AuthTokenPair,
 } from '~/generated-metadata/graphql';
 
+import { tokenPairState } from '@/auth/states/tokenPairState';
 import { isDeveloperDefaultSignInPrefilledState } from '@/client-config/states/isDeveloperDefaultSignInPrefilledState';
-import { tokenPairState } from '../states/tokenPairState';
 
+import { isAppEffectRedirectEnabledState } from '@/app/states/isAppEffectRedirectEnabledState';
 import { useSignUpInNewWorkspace } from '@/auth/sign-in-up/hooks/useSignUpInNewWorkspace';
 import { isCurrentUserLoadedState } from '@/auth/states/isCurrentUserLoadedState';
+import { lastAuthenticatedMethodState } from '@/auth/states/lastAuthenticatedMethodState';
+import { loginTokenState } from '@/auth/states/loginTokenState';
 import {
   SignInUpStep,
   signInUpStepState,
@@ -65,8 +68,6 @@ import { iconsState } from 'twenty-ui/display';
 import { type AuthToken } from '~/generated/graphql';
 import { cookieStorage } from '~/utils/cookie-storage';
 import { getWorkspaceUrl } from '~/utils/getWorkspaceUrl';
-import { loginTokenState } from '../states/loginTokenState';
-import { isAppEffectRedirectEnabledState } from '@/app/states/isAppEffectRedirectEnabledState';
 
 export const useAuth = () => {
   const setTokenPair = useSetRecoilState(tokenPairState);
@@ -98,10 +99,10 @@ export const useAuth = () => {
   const [signUpInWorkspace] = useSignUpInWorkspaceMutation();
   const [getAuthTokensFromLoginToken] =
     useGetAuthTokensFromLoginTokenMutation();
-  const [getLoginTokenFromEmailVerificationToken] =
-    useGetLoginTokenFromEmailVerificationTokenMutation();
-  const [getWorkspaceAgnosticTokenFromEmailVerificationToken] =
-    useGetWorkspaceAgnosticTokenFromEmailVerificationTokenMutation();
+  const [verifyEmailAndGetLoginToken] =
+    useVerifyEmailAndGetLoginTokenMutation();
+  const [verifyEmailAndGetWorkspaceAgnosticToken] =
+    useVerifyEmailAndGetWorkspaceAgnosticTokenMutation();
   const [getAuthTokensFromOtp] = useGetAuthTokensFromOtpMutation();
 
   const workspacePublicData = useRecoilValue(workspacePublicDataState);
@@ -121,7 +122,7 @@ export const useAuth = () => {
   const { loadMockedObjectMetadataItems } = useLoadMockedObjectMetadataItems();
 
   const clearSession = useRecoilCallback(
-    ({ snapshot }) =>
+    ({ snapshot, set }) =>
       async () => {
         const emptySnapshot = snapshot_UNSTABLE();
 
@@ -152,6 +153,9 @@ export const useAuth = () => {
         const workspacePublicData = snapshot
           .getLoadable(workspacePublicDataState)
           .getValue();
+        const lastAuthenticatedMethod = snapshot
+          .getLoadable(lastAuthenticatedMethodState)
+          .getValue();
 
         const initialSnapshot = emptySnapshot.map(({ set }) => {
           set(iconsState, iconsValue);
@@ -174,12 +178,14 @@ export const useAuth = () => {
           return undefined;
         });
 
-        goToRecoilSnapshot(initialSnapshot);
-
         sessionStorage.clear();
         localStorage.clear();
+
+        goToRecoilSnapshot(initialSnapshot);
+
+        set(lastAuthenticatedMethodState, lastAuthenticatedMethod);
+
         await client.clearStore();
-        // We need to explicitly clear the state to trigger the cookie deletion which include the parent domain
         setLastAuthenticateWorkspaceDomain(null);
         await loadMockedObjectMetadataItems();
         navigate(AppPath.SignInUp);
@@ -238,13 +244,13 @@ export const useAuth = () => {
     [getLoginTokenFromCredentials, setSearchParams, setSignInUpStep, origin],
   );
 
-  const handleGetLoginTokenFromEmailVerificationToken = useCallback(
+  const handleverifyEmailAndGetLoginToken = useCallback(
     async (
       emailVerificationToken: string,
       email: string,
       captchaToken?: string,
     ) => {
-      const loginTokenResult = await getLoginTokenFromEmailVerificationToken({
+      const loginTokenResult = await verifyEmailAndGetLoginToken({
         variables: {
           email,
           emailVerificationToken,
@@ -257,41 +263,38 @@ export const useAuth = () => {
         throw loginTokenResult.errors;
       }
 
-      if (!loginTokenResult.data?.getLoginTokenFromEmailVerificationToken) {
+      if (!loginTokenResult.data?.verifyEmailAndGetLoginToken) {
         throw new Error('No login token');
       }
 
-      return loginTokenResult.data.getLoginTokenFromEmailVerificationToken;
+      return loginTokenResult.data.verifyEmailAndGetLoginToken;
     },
-    [getLoginTokenFromEmailVerificationToken, origin],
+    [verifyEmailAndGetLoginToken, origin],
   );
 
-  const handleGetWorkspaceAgnosticTokenFromEmailVerificationToken = useCallback(
+  const handleverifyEmailAndGetWorkspaceAgnosticToken = useCallback(
     async (
       emailVerificationToken: string,
       email: string,
       captchaToken?: string,
     ) => {
-      const { data, errors } =
-        await getWorkspaceAgnosticTokenFromEmailVerificationToken({
-          variables: {
-            email,
-            emailVerificationToken,
-            captchaToken,
-          },
-        });
+      const { data, errors } = await verifyEmailAndGetWorkspaceAgnosticToken({
+        variables: {
+          email,
+          emailVerificationToken,
+          captchaToken,
+        },
+      });
 
       if (isDefined(errors)) {
         throw errors;
       }
 
-      if (!data?.getWorkspaceAgnosticTokenFromEmailVerificationToken) {
+      if (!data?.verifyEmailAndGetWorkspaceAgnosticToken) {
         throw new Error('No workspace agnostic token in result');
       }
 
-      handleSetAuthTokens(
-        data.getWorkspaceAgnosticTokenFromEmailVerificationToken.tokens,
-      );
+      handleSetAuthTokens(data.verifyEmailAndGetWorkspaceAgnosticToken.tokens);
 
       const { user } = await loadCurrentUser();
 
@@ -303,7 +306,7 @@ export const useAuth = () => {
     },
     [
       createWorkspace,
-      getWorkspaceAgnosticTokenFromEmailVerificationToken,
+      verifyEmailAndGetWorkspaceAgnosticToken,
       handleSetAuthTokens,
       loadCurrentUser,
       setSignInUpStep,
@@ -681,10 +684,9 @@ export const useAuth = () => {
 
   return {
     getLoginTokenFromCredentials: handleGetLoginTokenFromCredentials,
-    getWorkspaceAgnosticTokenFromEmailVerificationToken:
-      handleGetWorkspaceAgnosticTokenFromEmailVerificationToken,
-    getLoginTokenFromEmailVerificationToken:
-      handleGetLoginTokenFromEmailVerificationToken,
+    verifyEmailAndGetWorkspaceAgnosticToken:
+      handleverifyEmailAndGetWorkspaceAgnosticToken,
+    verifyEmailAndGetLoginToken: handleverifyEmailAndGetLoginToken,
     getAuthTokensFromLoginToken: handleGetAuthTokensFromLoginToken,
     checkUserExists: { checkUserExistsData, checkUserExistsQuery },
     clearSession,

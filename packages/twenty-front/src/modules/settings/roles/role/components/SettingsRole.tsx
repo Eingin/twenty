@@ -20,7 +20,7 @@ import { t } from '@lingui/core/macro';
 import { useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { SettingsPath } from 'twenty-shared/types';
-import { isDefined, getSettingsPath } from 'twenty-shared/utils';
+import { getSettingsPath, isDefined } from 'twenty-shared/utils';
 import { IconLockOpen, IconSettings, IconUserPlus } from 'twenty-ui/display';
 
 import { useNavigateSettings } from '~/hooks/useNavigateSettings';
@@ -60,6 +60,11 @@ export const SettingsRole = ({ roleId, isCreateMode }: SettingsRoleProps) => {
   const { saveDraftRoleToDB } = useSaveDraftRoleToDB({
     isCreateMode,
     roleId,
+    onSuccess: async (savedRoleId) => {
+      if (isCreateMode) {
+        navigateSettings(SettingsPath.RoleDetail, { roleId: savedRoleId });
+      }
+    },
   });
 
   const isRoleEditable = settingsDraftRole.isEditable;
@@ -82,7 +87,9 @@ export const SettingsRole = ({ roleId, isCreateMode }: SettingsRoleProps) => {
     },
   ];
 
-  const isDirty = !isDeeplyEqual(settingsDraftRole, settingsPersistedRole);
+  const isDirty =
+    isDefined(settingsPersistedRole) &&
+    !isDeeplyEqual(settingsDraftRole, settingsPersistedRole);
 
   const handleCancel = () => {
     if (isCreateMode) {
@@ -128,11 +135,11 @@ export const SettingsRole = ({ roleId, isCreateMode }: SettingsRoleProps) => {
       title={<SettingsRoleLabelContainer roleId={roleId} />}
       links={[
         {
-          children: 'Workspace',
+          children: t`Workspace`,
           href: getSettingsPath(SettingsPath.Workspace),
         },
         {
-          children: 'Roles',
+          children: t`Roles`,
           href: getSettingsPath(SettingsPath.Roles),
         },
         {

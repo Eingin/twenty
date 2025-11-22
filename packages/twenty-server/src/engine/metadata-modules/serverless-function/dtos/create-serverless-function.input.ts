@@ -1,6 +1,7 @@
 import { Field, HideField, InputType } from '@nestjs/graphql';
 
 import {
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsObject,
@@ -10,8 +11,7 @@ import {
   Min,
 } from 'class-validator';
 import graphqlTypeJson from 'graphql-type-json';
-
-import { Sources } from 'src/engine/core-modules/file-storage/types/source.type';
+import { Sources } from 'twenty-shared/types';
 
 @InputType()
 export class CreateServerlessFunctionInput {
@@ -45,4 +45,24 @@ export class CreateServerlessFunctionInput {
   @IsObject()
   @IsOptional()
   code?: Sources;
+
+  @IsString()
+  @Field({ nullable: true })
+  @IsOptional()
+  handlerName?: string;
+
+  @IsString()
+  @Field({ nullable: true })
+  @IsOptional()
+  handlerPath?: string;
+
+  @Field(() => graphqlTypeJson, { nullable: true })
+  @IsObject()
+  @IsOptional()
+  toolInputSchema?: object;
+
+  @IsBoolean()
+  @Field({ nullable: true })
+  @IsOptional()
+  isTool?: boolean;
 }

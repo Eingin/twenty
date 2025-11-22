@@ -1,7 +1,9 @@
 import { ResizableImage } from '@/advanced-text-editor/extensions/resizable-image/ResizableImage';
 import { UploadImageExtension } from '@/advanced-text-editor/extensions/resizable-image/UploadImageExtension';
+import { SlashCommand } from '@/advanced-text-editor/extensions/slash-command/SlashCommand';
 import { getInitialAdvancedTextEditorContent } from '@/workflow/workflow-variables/utils/getInitialAdvancedTextEditorContent';
 import { VariableTag } from '@/workflow/workflow-variables/utils/variableTag';
+import { t } from '@lingui/core/macro';
 import { Bold } from '@tiptap/extension-bold';
 import { Document } from '@tiptap/extension-document';
 import { HardBreak } from '@tiptap/extension-hard-break';
@@ -15,8 +17,11 @@ import { Text } from '@tiptap/extension-text';
 import { Underline } from '@tiptap/extension-underline';
 import { Dropcursor, Placeholder, UndoRedo } from '@tiptap/extensions';
 import { type Editor, useEditor } from '@tiptap/react';
+import { marked } from 'marked';
 import { type DependencyList, useMemo } from 'react';
 import { isDefined } from 'twenty-shared/utils';
+
+export type AdvancedTextEditorContentType = 'json' | 'markdown';
 
 type UseAdvancedTextEditorProps = {
   placeholder: string | undefined;
@@ -27,6 +32,8 @@ type UseAdvancedTextEditorProps = {
   onBlur?: (editor: Editor) => void;
   onImageUpload?: (file: File) => Promise<string>;
   onImageUploadError?: (error: Error, file: File) => void;
+  enableSlashCommand?: boolean;
+  contentType?: AdvancedTextEditorContentType;
 };
 
 export const useAdvancedTextEditor = (
@@ -39,16 +46,20 @@ export const useAdvancedTextEditor = (
     onBlur,
     onImageUpload,
     onImageUploadError,
+    enableSlashCommand,
+    contentType = 'json',
   }: UseAdvancedTextEditorProps,
   dependencies?: DependencyList,
 ) => {
+  const isMarkdownMode = contentType === 'markdown';
+
   const extensions = useMemo(
     () => [
       Document,
       Paragraph,
       Text,
       Placeholder.configure({
-        placeholder,
+        placeholder: placeholder ?? t`Enter text or Type '/' for commands`,
       }),
       VariableTag,
       HardBreak.configure({
@@ -72,16 +83,34 @@ export const useAdvancedTextEditor = (
         onImageUpload,
         onImageUploadError,
       }),
+      ...(!readonly && enableSlashCommand !== false ? [SlashCommand] : []),
     ],
-    [placeholder, onImageUpload, onImageUploadError],
+    [
+      placeholder,
+      onImageUpload,
+      onImageUploadError,
+      readonly,
+      enableSlashCommand,
+    ],
   );
+
+  const getEditorContent = () => {
+    if (!isDefined(defaultValue)) {
+      return undefined;
+    }
+
+    if (isMarkdownMode) {
+      // Convert markdown to HTML, then TipTap will parse the HTML
+      return marked.parse(defaultValue, { async: false }) as string;
+    }
+
+    return getInitialAdvancedTextEditorContent(defaultValue);
+  };
 
   const editor = useEditor(
     {
       extensions,
-      content: isDefined(defaultValue)
-        ? getInitialAdvancedTextEditorContent(defaultValue)
-        : undefined,
+      content: getEditorContent(),
       editable: !readonly,
       onUpdate: ({ editor }) => {
         onUpdate(editor);

@@ -1,5 +1,8 @@
 import { AdvancedTextEditor } from '@/advanced-text-editor/components/AdvancedTextEditor';
-import { useAdvancedTextEditor } from '@/advanced-text-editor/hooks/useAdvancedTextEditor';
+import {
+  type AdvancedTextEditorContentType,
+  useAdvancedTextEditor,
+} from '@/advanced-text-editor/hooks/useAdvancedTextEditor';
 import { FormFieldInputContainer } from '@/object-record/record-field/ui/form-types/components/FormFieldInputContainer';
 import { type VariablePickerComponent } from '@/object-record/record-field/ui/form-types/types/VariablePickerComponent';
 import { InputErrorHelper } from '@/ui/input/components/InputErrorHelper';
@@ -86,6 +89,7 @@ type FormAdvancedTextFieldInputProps = {
   fullScreenBreadcrumbs?: BreadcrumbProps['links'];
   minHeight: number;
   maxWidth: number;
+  contentType?: AdvancedTextEditorContentType;
 };
 
 export const FormAdvancedTextFieldInput = ({
@@ -103,6 +107,7 @@ export const FormAdvancedTextFieldInput = ({
   fullScreenBreadcrumbs,
   minHeight,
   maxWidth,
+  contentType = 'json',
 }: FormAdvancedTextFieldInputProps) => {
   const instanceId = useId();
   const isMobile = useIsMobile();
@@ -116,12 +121,18 @@ export const FormAdvancedTextFieldInput = ({
 
   const editor = useAdvancedTextEditor(
     {
-      placeholder: placeholder ?? 'Enter text',
+      placeholder: placeholder,
       readonly,
       defaultValue,
+      contentType,
       onUpdate: (editor) => {
-        const jsonContent = editor.getJSON();
-        onChange(JSON.stringify(jsonContent));
+        if (contentType === 'markdown') {
+          // For markdown mode, output the HTML which preserves formatting
+          onChange(editor.getHTML());
+        } else {
+          const jsonContent = editor.getJSON();
+          onChange(JSON.stringify(jsonContent));
+        }
       },
       onFocus: () => {
         pushFocusItemToFocusStack({
@@ -140,6 +151,7 @@ export const FormAdvancedTextFieldInput = ({
       },
       onImageUpload,
       onImageUploadError,
+      enableSlashCommand: true,
     },
     [isFullScreen],
   );

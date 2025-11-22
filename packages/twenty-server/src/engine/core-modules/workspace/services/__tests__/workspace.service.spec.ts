@@ -1,5 +1,5 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 
 import { type Repository } from 'typeorm';
 
@@ -28,6 +28,7 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 import { WorkspaceManyOrAllFlatEntityMapsCacheService } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.service';
 import { PermissionsService } from 'src/engine/metadata-modules/permissions/permissions.service';
 import { WorkspaceCacheStorageService } from 'src/engine/workspace-cache-storage/workspace-cache-storage.service';
+import { WorkspaceDataSourceService } from 'src/engine/workspace-datasource/workspace-datasource.service';
 import { WorkspaceManagerService } from 'src/engine/workspace-manager/workspace-manager.service';
 
 describe('WorkspaceService', () => {
@@ -39,6 +40,7 @@ describe('WorkspaceService', () => {
   let messageQueueService: MessageQueueService;
   let dnsManagerService: DnsManagerService;
   let billingSubscriptionService: BillingSubscriptionService;
+  let userWorkspaceService: UserWorkspaceService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -116,15 +118,40 @@ describe('WorkspaceService', () => {
           },
         },
         {
+          provide: WorkspaceDataSourceService,
+          useValue: {
+            deleteWorkspaceDBSchema: jest.fn(),
+          },
+        },
+        {
           provide: WorkspaceManyOrAllFlatEntityMapsCacheService,
           useValue: {
             flushFlatEntityMaps: jest.fn(),
           },
         },
         {
+          provide: UserWorkspaceService,
+          useValue: {
+            deleteUserWorkspace: jest.fn(),
+          },
+        },
+        {
           provide: getQueueToken(MessageQueue.deleteCascadeQueue),
           useValue: {
             add: jest.fn(),
+          },
+        },
+        {
+          provide: getDataSourceToken(),
+          useValue: {
+            createQueryRunner: jest.fn().mockReturnValue({
+              connect: jest.fn(),
+              startTransaction: jest.fn(),
+              commitTransaction: jest.fn(),
+              rollbackTransaction: jest.fn(),
+              release: jest.fn(),
+              manager: {},
+            }),
           },
         },
       ],
@@ -151,6 +178,8 @@ describe('WorkspaceService', () => {
     billingSubscriptionService = module.get<BillingSubscriptionService>(
       BillingSubscriptionService,
     );
+    userWorkspaceService =
+      module.get<UserWorkspaceService>(UserWorkspaceService);
   });
 
   afterEach(() => {
@@ -163,7 +192,13 @@ describe('WorkspaceService', () => {
 
   describe('handleRemoveWorkspaceMember', () => {
     it('should soft delete the user workspace record', async () => {
-      jest.spyOn(userWorkspaceRepository, 'find').mockResolvedValue([]);
+      jest.spyOn(userWorkspaceRepository, 'find').mockResolvedValue([
+        {
+          userId: 'user-id',
+          workspaceId: 'workspace-id',
+          id: 'user-workspace-id',
+        } as UserWorkspaceEntity,
+      ]);
 
       await service.handleRemoveWorkspaceMember(
         'workspace-id',
@@ -171,15 +206,21 @@ describe('WorkspaceService', () => {
         true,
       );
 
-      expect(userWorkspaceRepository.softDelete).toHaveBeenCalledWith({
-        userId: 'user-id',
-        workspaceId: 'workspace-id',
+      expect(userWorkspaceService.deleteUserWorkspace).toHaveBeenCalledWith({
+        userWorkspaceId: 'user-workspace-id',
+        softDelete: true,
       });
       expect(userWorkspaceRepository.delete).not.toHaveBeenCalled();
       expect(userRepository.softDelete).toHaveBeenCalledWith('user-id');
     });
     it('should destroy the user workspace record', async () => {
-      jest.spyOn(userWorkspaceRepository, 'find').mockResolvedValue([]);
+      jest.spyOn(userWorkspaceRepository, 'find').mockResolvedValue([
+        {
+          id: 'user-workspace-id',
+          userId: 'user-id',
+          workspaceId: 'workspace-id',
+        } as UserWorkspaceEntity,
+      ]);
 
       await service.handleRemoveWorkspaceMember(
         'workspace-id',
@@ -187,20 +228,26 @@ describe('WorkspaceService', () => {
         false,
       );
 
-      expect(userWorkspaceRepository.delete).toHaveBeenCalledWith({
-        userId: 'user-id',
-        workspaceId: 'workspace-id',
+      expect(userWorkspaceService.deleteUserWorkspace).toHaveBeenCalledWith({
+        userWorkspaceId: 'user-workspace-id',
+        softDelete: false,
       });
-      expect(userWorkspaceRepository.softDelete).not.toHaveBeenCalled();
       expect(userRepository.softDelete).toHaveBeenCalledWith('user-id');
     });
 
     it('should not soft delete the user record if there are other user workspace records', async () => {
-      jest
-        .spyOn(userWorkspaceRepository, 'find')
-        .mockResolvedValue([
-          { id: 'remaining-user-workspace-id' } as UserWorkspaceEntity,
-        ]);
+      jest.spyOn(userWorkspaceRepository, 'find').mockResolvedValue([
+        {
+          id: 'remaining-user-workspace-id',
+          userId: 'user-id',
+          workspaceId: 'other-workspace-id',
+        } as UserWorkspaceEntity,
+        {
+          id: 'user-workspace-id',
+          userId: 'user-id',
+          workspaceId: 'workspace-id',
+        } as UserWorkspaceEntity,
+      ]);
 
       await service.handleRemoveWorkspaceMember(
         'workspace-id',
@@ -208,11 +255,16 @@ describe('WorkspaceService', () => {
         false,
       );
 
-      expect(userWorkspaceRepository.delete).toHaveBeenCalledWith({
-        userId: 'user-id',
-        workspaceId: 'workspace-id',
+      expect(userWorkspaceService.deleteUserWorkspace).toHaveBeenCalledWith({
+        userWorkspaceId: 'user-workspace-id',
+        softDelete: false,
       });
-      expect(userWorkspaceRepository.softDelete).not.toHaveBeenCalled();
+      expect(userWorkspaceService.deleteUserWorkspace).not.toHaveBeenCalledWith(
+        {
+          userWorkspaceId: 'remaining-user-workspace-id',
+          softDelete: false,
+        },
+      );
       expect(userRepository.softDelete).not.toHaveBeenCalled();
     });
   });

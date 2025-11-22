@@ -2,7 +2,7 @@ import { type ColumnType, type QueryRunner } from 'typeorm';
 
 import { type WorkspaceSchemaColumnDefinition } from 'src/engine/twenty-orm/workspace-schema-manager/types/workspace-schema-column-definition.type';
 import { buildSqlColumnDefinition } from 'src/engine/twenty-orm/workspace-schema-manager/utils/build-sql-column-definition.util';
-import { removeSqlDDLInjection } from 'src/engine/workspace-manager/workspace-migration-runner/utils/remove-sql-injection.util';
+import { removeSqlDDLInjection } from 'src/engine/workspace-manager/workspace-migration/utils/remove-sql-injection.util';
 
 export class WorkspaceSchemaColumnManagerService {
   async addColumns({
@@ -33,20 +33,23 @@ export class WorkspaceSchemaColumnManagerService {
     schemaName,
     tableName,
     columnNames,
+    cascade = false,
   }: {
     queryRunner: QueryRunner;
     schemaName: string;
     tableName: string;
     columnNames: string[];
+    cascade?: boolean;
   }): Promise<void> {
     if (columnNames.length === 0) return;
 
     const safeSchemaName = removeSqlDDLInjection(schemaName);
     const safeTableName = removeSqlDDLInjection(tableName);
+    const cascadeClause = cascade ? ' CASCADE' : '';
     const dropClauses = columnNames.map((name) => {
       const safeName = removeSqlDDLInjection(name);
 
-      return `DROP COLUMN IF EXISTS "${safeName}"`;
+      return `DROP COLUMN IF EXISTS "${safeName}"${cascadeClause}`;
     });
     const sql = `ALTER TABLE "${safeSchemaName}"."${safeTableName}" ${dropClauses.join(', ')}`;
 

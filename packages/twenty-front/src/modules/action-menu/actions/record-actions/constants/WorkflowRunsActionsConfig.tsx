@@ -18,30 +18,23 @@ import {
 
 export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
   config: {
-    [WorkflowRunSingleRecordActionKeys.STOP]: {
-      key: WorkflowRunSingleRecordActionKeys.STOP,
-      label: msg`Stop`,
-      shortLabel: msg`Stop`,
+    [WorkflowRunSingleRecordActionKeys.SEE_VERSION]: {
+      key: WorkflowRunSingleRecordActionKeys.SEE_VERSION,
+      label: msg`See version`,
+      shortLabel: msg`See version`,
       position: 0,
       isPinned: true,
       type: ActionType.Standard,
       scope: ActionScope.RecordSelection,
-      Icon: IconPlayerStop,
-      shouldBeRegistered: ({
-        selectedRecord,
-        isWorkflowRunStoppageEnabled,
-      }) => {
-        return (
-          selectedRecord?.status === 'RUNNING' && isWorkflowRunStoppageEnabled
-        );
-      },
+      Icon: IconVersions,
+      shouldBeRegistered: () => true,
       availableOn: [
         ActionViewType.SHOW_PAGE,
         ActionViewType.INDEX_PAGE_SINGLE_RECORD_SELECTION,
-        ActionViewType.INDEX_PAGE_BULK_SELECTION,
       ],
-      component: <StopWorkflowRunSingleRecordAction />,
+      component: <SeeVersionWorkflowRunSingleRecordAction />,
     },
+
     [WorkflowRunSingleRecordActionKeys.SEE_WORKFLOW]: {
       key: WorkflowRunSingleRecordActionKeys.SEE_WORKFLOW,
       label: msg`See workflow`,
@@ -58,21 +51,24 @@ export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
       ],
       component: <SeeWorkflowWorkflowRunSingleRecordAction />,
     },
-    [WorkflowRunSingleRecordActionKeys.SEE_VERSION]: {
-      key: WorkflowRunSingleRecordActionKeys.SEE_VERSION,
-      label: msg`See version`,
-      shortLabel: msg`See version`,
+    [WorkflowRunSingleRecordActionKeys.STOP]: {
+      key: WorkflowRunSingleRecordActionKeys.STOP,
+      label: msg`Stop`,
+      shortLabel: msg`Stop`,
       position: 2,
       isPinned: true,
       type: ActionType.Standard,
       scope: ActionScope.RecordSelection,
-      Icon: IconVersions,
-      shouldBeRegistered: () => true,
+      Icon: IconPlayerStop,
+      shouldBeRegistered: ({ selectedRecord }) => {
+        return selectedRecord?.status === 'RUNNING';
+      },
       availableOn: [
         ActionViewType.SHOW_PAGE,
         ActionViewType.INDEX_PAGE_SINGLE_RECORD_SELECTION,
+        ActionViewType.INDEX_PAGE_BULK_SELECTION,
       ],
-      component: <SeeVersionWorkflowRunSingleRecordAction />,
+      component: <StopWorkflowRunSingleRecordAction />,
     },
   },
   actionKeys: [
@@ -90,6 +86,7 @@ export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
     NoSelectionRecordActionKeys.GO_TO_PEOPLE,
     NoSelectionRecordActionKeys.GO_TO_COMPANIES,
     NoSelectionRecordActionKeys.GO_TO_OPPORTUNITIES,
+    NoSelectionRecordActionKeys.GO_TO_DASHBOARDS,
     NoSelectionRecordActionKeys.GO_TO_SETTINGS,
     NoSelectionRecordActionKeys.GO_TO_TASKS,
     NoSelectionRecordActionKeys.GO_TO_NOTES,
@@ -146,14 +143,17 @@ export const WORKFLOW_RUNS_ACTIONS_CONFIG = inheritActionsFromDefaultConfig({
     [NoSelectionRecordActionKeys.GO_TO_OPPORTUNITIES]: {
       position: 15,
     },
-    [NoSelectionRecordActionKeys.GO_TO_SETTINGS]: {
+    [NoSelectionRecordActionKeys.GO_TO_DASHBOARDS]: {
       position: 16,
     },
-    [NoSelectionRecordActionKeys.GO_TO_TASKS]: {
+    [NoSelectionRecordActionKeys.GO_TO_SETTINGS]: {
       position: 17,
     },
-    [NoSelectionRecordActionKeys.GO_TO_NOTES]: {
+    [NoSelectionRecordActionKeys.GO_TO_TASKS]: {
       position: 18,
+    },
+    [NoSelectionRecordActionKeys.GO_TO_NOTES]: {
+      position: 19,
     },
   },
 });

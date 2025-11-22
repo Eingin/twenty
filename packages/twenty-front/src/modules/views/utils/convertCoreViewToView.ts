@@ -7,6 +7,7 @@ import { convertCoreViewGroupToViewGroup } from '@/views/utils/convertCoreViewGr
 import { convertCoreViewKeyToViewKey } from '@/views/utils/convertCoreViewKeyToViewKey';
 import { convertCoreViewOpenRecordInToViewOpenRecordIn } from '@/views/utils/convertCoreViewOpenRecordInToViewOpenRecordIn';
 import { convertCoreViewTypeToViewType } from '@/views/utils/convertCoreViewTypeToViewType';
+import { ViewVisibility } from '~/generated-metadata/graphql';
 
 export const convertCoreViewToView = (
   coreView: CoreViewWithRelations,
@@ -24,20 +25,21 @@ export const convertCoreViewToView = (
     key: convertedKey,
     objectMetadataId: coreView.objectMetadataId,
     isCompact: coreView.isCompact,
-    viewFields: coreView.viewFields.map((viewField) =>
+    viewFields: coreView.viewFields?.map((viewField) =>
       convertCoreViewFieldToViewField(viewField),
     ),
-    viewGroups: coreView.viewGroups.map((viewGroup) =>
+    viewGroups: coreView.viewGroups?.map((viewGroup) =>
       convertCoreViewGroupToViewGroup(viewGroup),
     ),
-    viewFilters: coreView.viewFilters.map((viewFilter) =>
+    viewFilters: coreView.viewFilters?.map((viewFilter) =>
       convertCoreViewFilterToViewFilter(viewFilter),
     ),
     viewFilterGroups: coreView.viewFilterGroups?.map(
       convertCoreViewFilterGroupToViewFilterGroup,
     ),
     viewSorts: coreView.viewSorts,
-    kanbanFieldMetadataId: '',
+    mainGroupByFieldMetadataId: coreView.mainGroupByFieldMetadataId ?? null,
+    shouldHideEmptyGroups: coreView.shouldHideEmptyGroups,
     kanbanAggregateOperation: coreView.kanbanAggregateOperation ?? null,
     kanbanAggregateOperationFieldMetadataId:
       coreView.kanbanAggregateOperationFieldMetadataId ?? null,
@@ -47,6 +49,8 @@ export const convertCoreViewToView = (
     icon: coreView.icon,
     openRecordIn: convertedOpenRecordIn,
     anyFieldFilterValue: coreView.anyFieldFilterValue ?? null,
+    visibility: coreView.visibility ?? ViewVisibility.UNLISTED,
+    createdByUserWorkspaceId: coreView.createdByUserWorkspaceId,
     __typename: 'View',
   };
 };

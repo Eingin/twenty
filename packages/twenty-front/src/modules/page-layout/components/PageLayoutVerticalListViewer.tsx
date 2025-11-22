@@ -1,8 +1,15 @@
+import { usePageLayoutShouldUseWhiteBackground } from '@/page-layout/hooks/usePageLayoutShouldUseWhiteBackground';
+import { type PageLayoutWidget } from '@/page-layout/types/PageLayoutWidget';
 import { WidgetRenderer } from '@/page-layout/widgets/components/WidgetRenderer';
 import styled from '@emotion/styled';
-import { PageLayoutType, type PageLayoutWidget } from '~/generated/graphql';
 
-const StyledVerticalListContainer = styled.div`
+const StyledVerticalListContainer = styled.div<{
+  shouldUseWhiteBackground: boolean;
+}>`
+  background: ${({ theme, shouldUseWhiteBackground }) =>
+    shouldUseWhiteBackground
+      ? theme.background.primary
+      : theme.background.secondary};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(2)};
@@ -15,15 +22,15 @@ type PageLayoutVerticalListViewerProps = {
 export const PageLayoutVerticalListViewer = ({
   widgets,
 }: PageLayoutVerticalListViewerProps) => {
+  const { shouldUseWhiteBackground } = usePageLayoutShouldUseWhiteBackground();
+
   return (
-    <StyledVerticalListContainer>
+    <StyledVerticalListContainer
+      shouldUseWhiteBackground={shouldUseWhiteBackground}
+    >
       {widgets.map((widget) => (
         <div key={widget.id}>
-          <WidgetRenderer
-            widget={widget}
-            pageLayoutType={PageLayoutType.RECORD_PAGE}
-            layoutMode="vertical-list"
-          />
+          <WidgetRenderer widget={widget} />
         </div>
       ))}
     </StyledVerticalListContainer>

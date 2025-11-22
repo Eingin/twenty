@@ -1,7 +1,9 @@
+import { DEFAULT_FAST_MODEL } from '@/ai/constants/DefaultFastModel';
+import { DEFAULT_SMART_MODEL } from '@/ai/constants/DefaultSmartModel';
 import { type CurrentUserWorkspace } from '@/auth/states/currentUserWorkspaceState';
+import { CUSTOM_WORKSPACE_APPLICATION_MOCK } from '@/object-metadata/hooks/__tests__/constants/CustomWorkspaceApplicationMock.test.constant';
 import { type WorkspaceMember } from '@/workspace-member/types/WorkspaceMember';
 import {
-  FeatureFlagKey,
   OnboardingStatus,
   PermissionFlagType,
   SubscriptionInterval,
@@ -28,6 +30,7 @@ type MockedUser = Pick<
   | 'onboardingStatus'
   | 'userVars'
   | 'availableWorkspaces'
+  | 'hasPassword'
 > & {
   workspaceMember: WorkspaceMember | null;
   locale: string;
@@ -53,7 +56,9 @@ const PRO_METERED_MONTHLY_PRICE = PRO_METERED_PRODUCT?.prices?.find(
   (pr) => pr.recurringInterval === 'Month',
 )!;
 
-export const mockCurrentWorkspace: Workspace = {
+export const mockCurrentWorkspace = {
+  workspaceCustomApplication: CUSTOM_WORKSPACE_APPLICATION_MOCK,
+  workspaceCustomApplicationId: CUSTOM_WORKSPACE_APPLICATION_MOCK.id,
   subdomain: 'acme.twenty.com',
   id: '7dfbc3f7-6e5e-4128-957e-8d86808cdf6w',
   displayName: 'Twenty',
@@ -74,20 +79,13 @@ export const mockCurrentWorkspace: Workspace = {
     customUrl: undefined,
     subdomainUrl: 'twenty.twenty.com',
   },
-  featureFlags: [
-    {
-      key: FeatureFlagKey.IS_AIRTABLE_INTEGRATION_ENABLED,
-      value: true,
-    },
-    {
-      key: FeatureFlagKey.IS_POSTGRESQL_INTEGRATION_ENABLED,
-      value: true,
-    },
-  ],
+  featureFlags: [],
   createdAt: '2023-04-26T10:23:42.33625+00:00',
   updatedAt: '2023-04-26T10:23:42.33625+00:00',
   metadataVersion: 1,
   trashRetentionDays: 14,
+  fastModel: DEFAULT_FAST_MODEL,
+  smartModel: DEFAULT_SMART_MODEL,
   routerModel: 'auto',
   currentBillingSubscription: {
     __typename: 'BillingSubscription',
@@ -157,7 +155,7 @@ export const mockCurrentWorkspace: Workspace = {
   databaseUrl: '',
   isTwoFactorAuthenticationEnforced: false,
   __typename: 'Workspace',
-};
+} as const satisfies Workspace;
 
 export const mockedWorkspaceMemberData: WorkspaceMember = {
   __typename: 'WorkspaceMember',
@@ -186,12 +184,14 @@ export const mockedUserData: MockedUser = {
   lastName: 'Test',
   canAccessFullAdminPanel: false,
   canImpersonate: false,
+  hasPassword: true,
   supportUserHash:
     'a95afad9ff6f0b364e2a3fd3e246a1a852c22b6e55a3ca33745a86c201f9c10d',
   workspaceMember: mockedWorkspaceMemberData,
   currentWorkspace: mockCurrentWorkspace,
   currentUserWorkspace: {
     permissionFlags: [PermissionFlagType.WORKSPACE_MEMBERS],
+    twoFactorAuthenticationMethodSummary: [],
     objectsPermissions: generatedMockObjectMetadataItems.map((item) => ({
       objectMetadataId: item.id,
       canReadObjectRecords: true,
@@ -242,6 +242,7 @@ export const mockedOnboardingUserData = (
     email: 'workspace-onboarding@test.com',
     firstName: '',
     lastName: '',
+    hasPassword: false,
     canAccessFullAdminPanel: false,
     canImpersonate: false,
     supportUserHash:
@@ -262,7 +263,7 @@ export const mockedOnboardingUserData = (
     },
     locale: 'en',
     workspaces: [{ workspace: mockCurrentWorkspace }],
-    onboardingStatdeus: onboardingStatus || null,
+    onboardingStatus: onboardingStatus || null,
     userVars: {},
     availableWorkspaces: {
       availableWorkspacesForSignIn: [],

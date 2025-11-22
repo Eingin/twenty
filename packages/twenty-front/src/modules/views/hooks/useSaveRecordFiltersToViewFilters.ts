@@ -1,7 +1,8 @@
 import { currentRecordFiltersComponentState } from '@/object-record/record-filter/states/currentRecordFiltersComponentState';
 import { useRecoilComponentCallbackState } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentCallbackState';
 import { getSnapshotValue } from '@/ui/utilities/state/utils/getSnapshotValue';
-import { usePersistViewFilterRecords } from '@/views/hooks/internal/usePersistViewFilter';
+import { usePerformViewFilterAPIPersist } from '@/views/hooks/internal/usePerformViewFilterAPIPersist';
+import { useCanPersistViewChanges } from '@/views/hooks/useCanPersistViewChanges';
 import { useGetCurrentViewOnly } from '@/views/hooks/useGetCurrentViewOnly';
 import { getViewFiltersToCreate } from '@/views/utils/getViewFiltersToCreate';
 import { getViewFiltersToDelete } from '@/views/utils/getViewFiltersToDelete';
@@ -11,8 +12,12 @@ import { useRecoilCallback } from 'recoil';
 import { isDefined } from 'twenty-shared/utils';
 
 export const useSaveRecordFiltersToViewFilters = () => {
-  const { createViewFilters, updateViewFilters, deleteViewFilters } =
-    usePersistViewFilterRecords();
+  const { canPersistChanges } = useCanPersistViewChanges();
+  const {
+    performViewFilterAPICreate,
+    performViewFilterAPIUpdate,
+    performViewFilterAPIDelete,
+  } = usePerformViewFilterAPIPersist();
 
   const { currentView } = useGetCurrentViewOnly();
 
@@ -23,7 +28,7 @@ export const useSaveRecordFiltersToViewFilters = () => {
   const saveRecordFiltersToViewFilters = useRecoilCallback(
     ({ snapshot }) =>
       async () => {
-        if (!isDefined(currentView)) {
+        if (!canPersistChanges || !isDefined(currentView)) {
           return;
         }
 
@@ -91,27 +96,34 @@ export const useSaveRecordFiltersToViewFilters = () => {
           }),
         );
 
-        const createResult = await createViewFilters(createViewFilterInputs);
+        const createResult = await performViewFilterAPICreate(
+          createViewFilterInputs,
+        );
         if (createResult.status === 'failed') {
           return;
         }
 
-        const updateResult = await updateViewFilters(updateViewFilterInputs);
+        const updateResult = await performViewFilterAPIUpdate(
+          updateViewFilterInputs,
+        );
         if (updateResult.status === 'failed') {
           return;
         }
 
-        const deleteResult = await deleteViewFilters(deleteViewFilterInputs);
+        const deleteResult = await performViewFilterAPIDelete(
+          deleteViewFilterInputs,
+        );
         if (deleteResult.status === 'failed') {
           return;
         }
       },
     [
+      canPersistChanges,
       currentView,
       currentRecordFiltersCallbackState,
-      createViewFilters,
-      updateViewFilters,
-      deleteViewFilters,
+      performViewFilterAPICreate,
+      performViewFilterAPIUpdate,
+      performViewFilterAPIDelete,
     ],
   );
 

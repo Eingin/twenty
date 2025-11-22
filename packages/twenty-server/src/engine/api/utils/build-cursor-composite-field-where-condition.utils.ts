@@ -1,4 +1,8 @@
-import { FieldMetadataType, type ObjectRecord } from 'twenty-shared/types';
+import {
+  FieldMetadataType,
+  type ObjectRecord,
+  compositeTypeDefinitions,
+} from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
 import {
@@ -7,6 +11,7 @@ import {
   type ObjectRecordOrderBy,
 } from 'src/engine/api/graphql/workspace-query-builder/interfaces/object-record.interface';
 
+import { STANDARD_ERROR_MESSAGE } from 'src/engine/api/common/common-query-runners/errors/standard-error-message.constant';
 import {
   GraphqlQueryRunnerException,
   GraphqlQueryRunnerExceptionCode,
@@ -15,7 +20,6 @@ import { buildCursorCumulativeWhereCondition } from 'src/engine/api/utils/build-
 import { computeOperator } from 'src/engine/api/utils/compute-operator.utils';
 import { isAscendingOrder } from 'src/engine/api/utils/is-ascending-order.utils';
 import { validateAndGetOrderByForCompositeField } from 'src/engine/api/utils/validate-and-get-order-by.utils';
-import { compositeTypeDefinitions } from 'src/engine/metadata-modules/field-metadata/composite-types';
 
 type BuildCursorCompositeFieldWhereConditionParams = {
   fieldType: FieldMetadataType;
@@ -43,6 +47,7 @@ export const buildCursorCompositeFieldWhereCondition = ({
     throw new GraphqlQueryRunnerException(
       `Composite type definition not found for type: ${fieldType}`,
       GraphqlQueryRunnerExceptionCode.INVALID_CURSOR,
+      { userFriendlyMessage: STANDARD_ERROR_MESSAGE },
     );
   }
 
@@ -109,6 +114,7 @@ export const buildCursorCompositeFieldWhereCondition = ({
         throw new GraphqlQueryRunnerException(
           'Invalid cursor',
           GraphqlQueryRunnerExceptionCode.INVALID_CURSOR,
+          { userFriendlyMessage: STANDARD_ERROR_MESSAGE },
         );
       }
 

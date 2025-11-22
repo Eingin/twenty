@@ -17,6 +17,7 @@ import { useTriggerApisOAuth } from '@/settings/accounts/hooks/useTriggerApiOAut
 import { PageFocusId } from '@/types/PageFocusId';
 import { Modal } from '@/ui/layout/modal/components/Modal';
 import { useHotkeysOnFocusedElement } from '@/ui/utilities/hotkey/hooks/useHotkeysOnFocusedElement';
+import { t } from '@lingui/core/macro';
 import { AppPath, ConnectedAccountProvider } from 'twenty-shared/types';
 import { IconGoogle, IconMicrosoft } from 'twenty-ui/display';
 import { MainButton } from 'twenty-ui/input';
@@ -68,6 +69,7 @@ export const SyncEmails = () => {
       redirectLocation: AppPath.Index,
       messageVisibility: visibility,
       calendarVisibility: calendarChannelVisibility,
+      skipMessageChannelConfiguration: true,
     });
   };
 
@@ -105,9 +107,9 @@ export const SyncEmails = () => {
 
   return (
     <Modal.Content isVerticalCentered isHorizontalCentered>
-      <Title noMarginTop>Emails and Calendar</Title>
+      <Title noMarginTop>{t`Emails and Calendar`}</Title>
       <SubTitle>
-        Sync your Emails and Calendar with Twenty. Choose your privacy settings.
+        {t`Sync your Emails and Calendar with Twenty. Choose your privacy settings.`}
       </SubTitle>
       <StyledSyncEmailsContainer>
         <OnboardingSyncEmailsSettingsCard
@@ -118,7 +120,7 @@ export const SyncEmails = () => {
       <StyledProviderContainer>
         {isGoogleProviderEnabled && (
           <MainButton
-            title="Sync with Google"
+            title={t`Sync with Google`}
             onClick={() => handleButtonClick(ConnectedAccountProvider.GOOGLE)}
             width={200}
             Icon={() => <IconGoogle size={theme.icon.size.sm} />}
@@ -126,7 +128,7 @@ export const SyncEmails = () => {
         )}
         {isMicrosoftProviderEnabled && (
           <MainButton
-            title="Sync with Outlook"
+            title={t`Sync with Outlook`}
             onClick={() =>
               handleButtonClick(ConnectedAccountProvider.MICROSOFT)
             }
@@ -136,7 +138,7 @@ export const SyncEmails = () => {
         )}
         {!isMicrosoftProviderEnabled && !isGoogleProviderEnabled && (
           <MainButton
-            title="Continue"
+            title={t`Continue`}
             onClick={continueWithoutSync}
             width={144}
           />
@@ -144,7 +146,7 @@ export const SyncEmails = () => {
       </StyledProviderContainer>
       <StyledActionLinkContainer>
         <ClickToActionLink onClick={continueWithoutSync}>
-          Continue without sync
+          {t`Continue without sync`}
         </ClickToActionLink>
       </StyledActionLinkContainer>
     </Modal.Content>

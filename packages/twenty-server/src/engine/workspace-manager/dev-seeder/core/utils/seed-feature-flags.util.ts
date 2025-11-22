@@ -1,36 +1,26 @@
-import { type DataSource } from 'typeorm';
+import { type QueryRunner } from 'typeorm';
 
 import { FeatureFlagKey } from 'src/engine/core-modules/feature-flag/enums/feature-flag-key.enum';
-import { SEED_APPLE_WORKSPACE_ID } from 'src/engine/workspace-manager/dev-seeder/core/utils/seed-workspaces.util';
 
 const tableName = 'featureFlag';
 
-export const seedFeatureFlags = async (
-  dataSource: DataSource,
-  schemaName: string,
-  workspaceId: string,
-) => {
-  await dataSource
+type SeedFeatureFlagsArgs = {
+  queryRunner: QueryRunner;
+  schemaName: string;
+  workspaceId: string;
+};
+
+export const seedFeatureFlags = async ({
+  queryRunner,
+  schemaName,
+  workspaceId,
+}: SeedFeatureFlagsArgs) => {
+  await queryRunner.manager
     .createQueryBuilder()
     .insert()
     .into(`${schemaName}.${tableName}`, ['key', 'workspaceId', 'value'])
     .orIgnore()
     .values([
-      {
-        key: FeatureFlagKey.IS_AIRTABLE_INTEGRATION_ENABLED,
-        workspaceId: workspaceId,
-        value: true,
-      },
-      {
-        key: FeatureFlagKey.IS_POSTGRESQL_INTEGRATION_ENABLED,
-        workspaceId: workspaceId,
-        value: true,
-      },
-      {
-        key: FeatureFlagKey.IS_STRIPE_INTEGRATION_ENABLED,
-        workspaceId: workspaceId,
-        value: true,
-      },
       {
         key: FeatureFlagKey.IS_UNIQUE_INDEXES_ENABLED,
         workspaceId: workspaceId,
@@ -45,21 +35,6 @@ export const seedFeatureFlags = async (
         key: FeatureFlagKey.IS_APPLICATION_ENABLED,
         workspaceId: workspaceId,
         value: true,
-      },
-      {
-        key: FeatureFlagKey.IS_IMAP_SMTP_CALDAV_ENABLED,
-        workspaceId: workspaceId,
-        value: true,
-      },
-      {
-        key: FeatureFlagKey.IS_MORPH_RELATION_ENABLED,
-        workspaceId: workspaceId,
-        value: true,
-      },
-      {
-        key: FeatureFlagKey.IS_WORKSPACE_MIGRATION_V2_ENABLED,
-        workspaceId: workspaceId,
-        value: workspaceId === SEED_APPLE_WORKSPACE_ID,
       },
       {
         key: FeatureFlagKey.IS_PAGE_LAYOUT_ENABLED,
@@ -86,16 +61,37 @@ export const seedFeatureFlags = async (
         workspaceId: workspaceId,
         value: true,
       },
+      {
+        key: FeatureFlagKey.IS_TIMELINE_ACTIVITY_MIGRATED,
+        workspaceId: workspaceId,
+        value: true,
+      },
+      {
+        key: FeatureFlagKey.IS_ROW_LEVEL_PERMISSION_PREDICATES_ENABLED,
+        workspaceId: workspaceId,
+        value: true,
+      },
+      {
+        key: FeatureFlagKey.IS_IF_ELSE_ENABLED,
+        workspaceId: workspaceId,
+        value: true,
+      },
     ])
     .execute();
 };
 
-export const deleteFeatureFlags = async (
-  dataSource: DataSource,
-  schemaName: string,
-  workspaceId: string,
-) => {
-  await dataSource
+type DeleteFeatureFlagsArgs = {
+  queryRunner: QueryRunner;
+  schemaName: string;
+  workspaceId: string;
+};
+
+export const deleteFeatureFlags = async ({
+  queryRunner,
+  schemaName,
+  workspaceId,
+}: DeleteFeatureFlagsArgs) => {
+  await queryRunner.manager
     .createQueryBuilder()
     .delete()
     .from(`${schemaName}.${tableName}`)

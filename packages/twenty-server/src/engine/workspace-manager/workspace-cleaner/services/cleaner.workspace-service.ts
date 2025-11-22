@@ -24,7 +24,7 @@ import { UserService } from 'src/engine/core-modules/user/services/user.service'
 import { UserVarsService } from 'src/engine/core-modules/user/user-vars/services/user-vars.service';
 import { WorkspaceService } from 'src/engine/core-modules/workspace/services/workspace.service';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
-import { TwentyORMGlobalManager } from 'src/engine/twenty-orm/twenty-orm-global.manager';
+import { GlobalWorkspaceOrmManager } from 'src/engine/twenty-orm/global-workspace-datasource/global-workspace-orm.manager';
 import { USER_WORKSPACE_DELETION_WARNING_SENT_KEY } from 'src/engine/workspace-manager/workspace-cleaner/constants/user-workspace-deletion-warning-sent-key.constant';
 import {
   WorkspaceCleanerException,
@@ -49,7 +49,7 @@ export class CleanerWorkspaceService {
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
     @InjectRepository(BillingSubscriptionEntity)
     private readonly billingSubscriptionRepository: Repository<BillingSubscriptionEntity>,
-    private readonly twentyORMGlobalManager: TwentyORMGlobalManager,
+    private readonly globalWorkspaceOrmManager: GlobalWorkspaceOrmManager,
     @InjectRepository(UserWorkspaceEntity)
     private readonly userWorkspaceRepository: Repository<UserWorkspaceEntity>,
     private readonly i18nService: I18nService,
@@ -70,25 +70,36 @@ export class CleanerWorkspaceService {
       );
   }
 
-  async computeWorkspaceBillingInactivity(
+  async computeDaysSinceSubscriptionUnpaidOrThrow(
     workspace: WorkspaceEntity,
   ): Promise<number> {
     try {
       const lastSubscription =
         await this.billingSubscriptionRepository.findOneOrFail({
-          where: { workspaceId: workspace.id },
+          where: {
+            workspaceId: workspace.id,
+          },
           order: { updatedAt: 'DESC' },
         });
 
-      const daysSinceBillingInactivity = differenceInDays(
+      if (
+        lastSubscription.status !== SubscriptionStatus.Unpaid &&
+        lastSubscription.status !== SubscriptionStatus.Canceled
+      ) {
+        throw new Error(
+          'No cancelled or unpaid billing subscription found for workspace',
+        );
+      }
+
+      const daysSinceSubscriptionUnpaid = differenceInDays(
         new Date(),
-        lastSubscription.updatedAt,
+        lastSubscription.currentPeriodStart,
       );
 
-      return daysSinceBillingInactivity;
+      return daysSinceSubscriptionUnpaid;
     } catch {
       throw new WorkspaceCleanerException(
-        `No billing subscription found for workspace ${workspace.id} ${workspace.displayName}`,
+        `No cancelled or unpaid billing subscription found for workspace ${workspace.id} ${workspace.displayName}`,
         WorkspaceCleanerExceptionCode.BILLING_SUBSCRIPTION_NOT_FOUND,
       );
     }
@@ -132,6 +143,10 @@ export class CleanerWorkspaceService {
     const workspaceDeletionMsg = msg`Action needed to prevent workspace deletion`;
     const i18n = this.i18nService.getI18nInstance(workspaceMember.locale);
     const subject = i18n._(workspaceDeletionMsg);
+
+    if (!isDefined(workspaceMember.userEmail)) {
+      throw new Error('Workspace member email is missing');
+    }
 
     this.emailService.send({
       to: workspaceMember.userEmail,
@@ -206,6 +221,10 @@ export class CleanerWorkspaceService {
     const emailTemplate = CleanSuspendedWorkspaceEmail(emailData);
     const html = await render(emailTemplate, { pretty: true });
     const text = await render(emailTemplate, { plainText: true });
+
+    if (!isDefined(workspaceMember.userEmail)) {
+      throw new Error('Workspace member email is missing');
+    }
 
     this.emailService.send({
       to: workspaceMember.userEmail,
@@ -299,7 +318,6 @@ export class CleanerWorkspaceService {
             await this.workspaceService.handleRemoveWorkspaceMember(
               workspace.id,
               userWorkspace.userId,
-              false,
             );
           }
 
@@ -367,7 +385,7 @@ export class CleanerWorkspaceService {
         }
 
         const workspaceInactivity =
-          await this.computeWorkspaceBillingInactivity(workspace);
+          await this.computeDaysSinceSubscriptionUnpaidOrThrow(workspace);
 
         if (workspaceInactivity > this.inactiveDaysBeforeSoftDelete) {
           await this.informWorkspaceMembersAndSoftDeleteWorkspace(
@@ -393,10 +411,6 @@ export class CleanerWorkspaceService {
           `Error while processing workspace ${workspace.id} ${workspace.displayName}: ${error}`,
         );
       }
-
-      await this.twentyORMGlobalManager.destroyDataSourceForWorkspace(
-        workspace.id,
-      );
     }
     this.logger.log(
       `${dryRun ? 'DRY RUN - ' : ''}batchWarnOrCleanSuspendedWorkspaces done!`,

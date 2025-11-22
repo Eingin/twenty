@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 
 import { isDefined } from 'twenty-shared/utils';
 
+import { ApplicationService } from 'src/engine/core-modules/application/application.service';
 import { WorkspaceManyOrAllFlatEntityMapsCacheService } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.service';
-import { computeFlatEntityMapsFromTo } from 'src/engine/metadata-modules/flat-entity/utils/compute-flat-entity-maps-from-to.util';
 import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
 import type { CreateServerlessFunctionInput } from 'src/engine/metadata-modules/serverless-function/dtos/create-serverless-function.input';
 import { ServerlessFunctionIdInput } from 'src/engine/metadata-modules/serverless-function/dtos/serverless-function-id.input';
@@ -15,62 +15,64 @@ import {
 import { FlatServerlessFunction } from 'src/engine/metadata-modules/serverless-function/types/flat-serverless-function.type';
 import { fromCreateServerlessFunctionInputToFlatServerlessFunction } from 'src/engine/metadata-modules/serverless-function/utils/from-create-serverless-function-input-to-flat-serverless-function.util';
 import { fromUpdateServerlessFunctionInputToFlatServerlessFunctionToUpdateOrThrow } from 'src/engine/metadata-modules/serverless-function/utils/from-update-serverless-function-input-to-flat-serverless-function-to-update-or-throw.util';
-import { WorkspaceMigrationBuilderExceptionV2 } from 'src/engine/workspace-manager/workspace-migration-v2/exceptions/workspace-migration-builder-exception-v2';
-import { WorkspaceMigrationValidateBuildAndRunService } from 'src/engine/workspace-manager/workspace-migration-v2/services/workspace-migration-validate-build-and-run-service';
+import { WorkspaceMigrationBuilderException } from 'src/engine/workspace-manager/workspace-migration/exceptions/workspace-migration-builder-exception';
+import { WorkspaceMigrationValidateBuildAndRunService } from 'src/engine/workspace-manager/workspace-migration/services/workspace-migration-validate-build-and-run-service';
 
 @Injectable()
 export class ServerlessFunctionV2Service {
   constructor(
     private readonly flatEntityMapsCacheService: WorkspaceManyOrAllFlatEntityMapsCacheService,
     private readonly workspaceMigrationValidateBuildAndRunService: WorkspaceMigrationValidateBuildAndRunService,
+    private readonly applicationService: ApplicationService,
   ) {}
 
   async createOne({
     createServerlessFunctionInput,
     workspaceId,
+    applicationId,
   }: {
     createServerlessFunctionInput: CreateServerlessFunctionInput & {
       serverlessFunctionLayerId: string;
     };
+    /**
+     * @deprecated do not use call validateBuildAndRunWorkspaceMigration contextually
+     * when interacting with another application than workspace custom one
+     * */
+    applicationId?: string;
     workspaceId: string;
   }) {
-    const flatEntityMaps =
-      await this.flatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
+    const { workspaceCustomFlatApplication } =
+      await this.applicationService.findWorkspaceTwentyStandardAndCustomApplicationOrThrow(
         {
           workspaceId,
-          flatMapsKeys: ['flatServerlessFunctionMaps'],
         },
       );
-
-    const existingFlatServerlessFunctionMaps =
-      flatEntityMaps.flatServerlessFunctionMaps;
 
     const flatServerlessFunctionToCreate =
       fromCreateServerlessFunctionInputToFlatServerlessFunction({
         createServerlessFunctionInput,
         workspaceId,
+        workspaceCustomApplicationId:
+          applicationId ?? workspaceCustomFlatApplication.id,
       });
 
     const validateAndBuildResult =
       await this.workspaceMigrationValidateBuildAndRunService.validateBuildAndRunWorkspaceMigration(
         {
-          workspaceId,
-          fromToAllFlatEntityMaps: {
-            flatServerlessFunctionMaps: computeFlatEntityMapsFromTo({
-              flatEntityMaps: existingFlatServerlessFunctionMaps,
+          allFlatEntityOperationByMetadataName: {
+            serverlessFunction: {
               flatEntityToCreate: [flatServerlessFunctionToCreate],
               flatEntityToDelete: [],
               flatEntityToUpdate: [],
-            }),
+            },
           },
-          buildOptions: {
-            isSystemBuild: false,
-          },
+          workspaceId,
+          isSystemBuild: false,
         },
       );
 
     if (isDefined(validateAndBuildResult)) {
-      throw new WorkspaceMigrationBuilderExceptionV2(
+      throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
         'Multiple validation errors occurred while creating serverless function',
       );
@@ -96,7 +98,7 @@ export class ServerlessFunctionV2Service {
     serverlessFunctionInput: UpdateServerlessFunctionInput,
     workspaceId: string,
   ) {
-    const flatEntityMaps =
+    const { flatServerlessFunctionMaps } =
       await this.flatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
         {
           workspaceId,
@@ -104,35 +106,29 @@ export class ServerlessFunctionV2Service {
         },
       );
 
-    const existingFlatServerlessFunctionMaps =
-      flatEntityMaps.flatServerlessFunctionMaps;
-
     const optimisticallyUpdatedFlatServerlessFunction =
       fromUpdateServerlessFunctionInputToFlatServerlessFunctionToUpdateOrThrow({
-        flatServerlessFunctionMaps: existingFlatServerlessFunctionMaps,
+        flatServerlessFunctionMaps,
         updateServerlessFunctionInput: serverlessFunctionInput,
       });
 
     const validateAndBuildResult =
       await this.workspaceMigrationValidateBuildAndRunService.validateBuildAndRunWorkspaceMigration(
         {
-          workspaceId,
-          fromToAllFlatEntityMaps: {
-            flatServerlessFunctionMaps: computeFlatEntityMapsFromTo({
-              flatEntityMaps: existingFlatServerlessFunctionMaps,
+          allFlatEntityOperationByMetadataName: {
+            serverlessFunction: {
               flatEntityToCreate: [],
               flatEntityToDelete: [],
               flatEntityToUpdate: [optimisticallyUpdatedFlatServerlessFunction],
-            }),
+            },
           },
-          buildOptions: {
-            isSystemBuild: false,
-          },
+          workspaceId,
+          isSystemBuild: false,
         },
       );
 
     if (isDefined(validateAndBuildResult)) {
-      throw new WorkspaceMigrationBuilderExceptionV2(
+      throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
         'Multiple validation errors occurred while updating serverless function',
       );
@@ -183,31 +179,28 @@ export class ServerlessFunctionV2Service {
 
     const optimisticallyUpdatedFlatServerlessFunctionWithDeletedAt = {
       ...existingFlatServerlessFunction,
-      deletedAt: new Date(),
+      deletedAt: new Date().toISOString(),
     };
 
     const validateAndBuildResult =
       await this.workspaceMigrationValidateBuildAndRunService.validateBuildAndRunWorkspaceMigration(
         {
-          fromToAllFlatEntityMaps: {
-            flatServerlessFunctionMaps: computeFlatEntityMapsFromTo({
-              flatEntityMaps: existingFlatServerlessFunctionMaps,
+          allFlatEntityOperationByMetadataName: {
+            serverlessFunction: {
               flatEntityToCreate: [],
               flatEntityToDelete: [],
               flatEntityToUpdate: [
                 optimisticallyUpdatedFlatServerlessFunctionWithDeletedAt,
               ],
-            }),
-          },
-          buildOptions: {
-            isSystemBuild,
+            },
           },
           workspaceId,
+          isSystemBuild,
         },
       );
 
     if (isDefined(validateAndBuildResult)) {
-      throw new WorkspaceMigrationBuilderExceptionV2(
+      throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
         'Multiple validation errors occurred while deleting serverless function',
       );
@@ -261,26 +254,20 @@ export class ServerlessFunctionV2Service {
     const validateAndBuildResult =
       await this.workspaceMigrationValidateBuildAndRunService.validateBuildAndRunWorkspaceMigration(
         {
-          fromToAllFlatEntityMaps: {
-            flatServerlessFunctionMaps: computeFlatEntityMapsFromTo({
-              flatEntityMaps: existingFlatServerlessFunctionMaps,
+          allFlatEntityOperationByMetadataName: {
+            serverlessFunction: {
               flatEntityToCreate: [],
               flatEntityToDelete: [existingFlatServerlessFunction],
               flatEntityToUpdate: [],
-            }),
-          },
-          buildOptions: {
-            isSystemBuild,
-            inferDeletionFromMissingEntities: {
-              serverlessFunction: true,
             },
           },
           workspaceId,
+          isSystemBuild,
         },
       );
 
     if (isDefined(validateAndBuildResult)) {
-      throw new WorkspaceMigrationBuilderExceptionV2(
+      throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
         'Multiple validation errors occurred while destroying serverless function',
       );

@@ -9,14 +9,12 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Relation,
+  type Relation,
   UpdateDateColumn,
 } from 'typeorm';
 
-import { SyncableEntity } from 'src/engine/workspace-manager/workspace-sync/interfaces/syncable-entity.interface';
-
 import { AggregateOperations } from 'src/engine/api/graphql/graphql-query-runner/constants/aggregate-operations.constant';
-import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+import { UserWorkspaceEntity } from 'src/engine/core-modules/user-workspace/user-workspace.entity';
 import { FieldMetadataEntity } from 'src/engine/metadata-modules/field-metadata/field-metadata.entity';
 import { ObjectMetadataEntity } from 'src/engine/metadata-modules/object-metadata/object-metadata.entity';
 import { ViewFieldEntity } from 'src/engine/metadata-modules/view-field/entities/view-field.entity';
@@ -28,6 +26,8 @@ import { ViewCalendarLayout } from 'src/engine/metadata-modules/view/enums/view-
 import { ViewKey } from 'src/engine/metadata-modules/view/enums/view-key.enum';
 import { ViewOpenRecordIn } from 'src/engine/metadata-modules/view/enums/view-open-record-in';
 import { ViewType } from 'src/engine/metadata-modules/view/enums/view-type.enum';
+import { ViewVisibility } from 'src/engine/metadata-modules/view/enums/view-visibility.enum';
+import { SyncableEntity } from 'src/engine/workspace-manager/types/syncable-entity.interface';
 
 // We could refactor this type to be dynamic to view type
 @Entity({ name: 'view', schema: 'core' })
@@ -35,6 +35,7 @@ import { ViewType } from 'src/engine/metadata-modules/view/enums/view-type.enum'
   'workspaceId',
   'objectMetadataId',
 ])
+@Index('IDX_VIEW_VISIBILITY', ['visibility'])
 @Check(
   'CHK_VIEW_CALENDAR_INTEGRITY',
   `("type" != 'CALENDAR' OR ("calendarLayout" IS NOT NULL AND "calendarFieldMetadataId" IS NOT NULL))`,
@@ -135,8 +136,22 @@ export class ViewEntity extends SyncableEntity implements Required<ViewEntity> {
   @JoinColumn({ name: 'calendarFieldMetadataId' })
   calendarFieldMetadata: Relation<FieldMetadataEntity>;
 
-  @Column({ nullable: false, type: 'uuid' })
-  workspaceId: string;
+  @Column({ nullable: true, type: 'uuid' })
+  mainGroupByFieldMetadataId: string | null;
+
+  @ManyToOne(
+    () => FieldMetadataEntity,
+    (fieldMetadata) => fieldMetadata.mainGroupByFieldMetadataViews,
+    {
+      onDelete: 'CASCADE',
+      nullable: true,
+    },
+  )
+  @JoinColumn({ name: 'mainGroupByFieldMetadataId' })
+  mainGroupByFieldMetadata: Relation<FieldMetadataEntity>;
+
+  @Column({ nullable: false, default: false, type: 'boolean' })
+  shouldHideEmptyGroups: boolean;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
@@ -150,11 +165,22 @@ export class ViewEntity extends SyncableEntity implements Required<ViewEntity> {
   @Column({ nullable: true, type: 'text', default: null })
   anyFieldFilterValue: string | null;
 
-  @ManyToOne(() => WorkspaceEntity, {
-    onDelete: 'CASCADE',
+  @Column({
+    type: 'enum',
+    enum: Object.values(ViewVisibility),
+    nullable: false,
+    default: ViewVisibility.WORKSPACE,
   })
-  @JoinColumn({ name: 'workspaceId' })
-  workspace: Relation<WorkspaceEntity>;
+  visibility: ViewVisibility;
+
+  @Column({ nullable: true, type: 'uuid' })
+  createdByUserWorkspaceId: string | null;
+
+  @ManyToOne(() => UserWorkspaceEntity, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'createdByUserWorkspaceId' })
+  createdBy: Relation<UserWorkspaceEntity>;
 
   @OneToMany(() => ViewFieldEntity, (viewField) => viewField.view)
   viewFields: Relation<ViewFieldEntity[]>;

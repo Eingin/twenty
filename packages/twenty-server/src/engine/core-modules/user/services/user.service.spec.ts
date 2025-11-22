@@ -2,9 +2,15 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { WorkspaceActivationStatus } from 'twenty-shared/workspace';
-import { type Repository } from 'typeorm';
+import { type Repository, type UpdateResult } from 'typeorm';
 
+import { ApplicationService } from 'src/engine/core-modules/application/application.service';
 import { AuthException } from 'src/engine/core-modules/auth/auth.exception';
+import { WorkspaceDomainsService } from 'src/engine/core-modules/domain/workspace-domains/services/workspace-domains.service';
+import { EmailVerificationService } from 'src/engine/core-modules/email-verification/services/email-verification.service';
+import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
+import { type UserWorkspaceEntity } from 'src/engine/core-modules/user-workspace/user-workspace.entity';
+import { UserWorkspaceService } from 'src/engine/core-modules/user-workspace/user-workspace.service';
 import { UserService } from 'src/engine/core-modules/user/services/user.service';
 import { UserEntity } from 'src/engine/core-modules/user/user.entity';
 import { WorkspaceService } from 'src/engine/core-modules/workspace/services/workspace.service';
@@ -14,15 +20,15 @@ import {
   PermissionsExceptionCode,
 } from 'src/engine/metadata-modules/permissions/permissions.exception';
 import { UserRoleService } from 'src/engine/metadata-modules/user-role/user-role.service';
+import { GlobalWorkspaceOrmManager } from 'src/engine/twenty-orm/global-workspace-datasource/global-workspace-orm.manager';
 import { type WorkspaceRepository } from 'src/engine/twenty-orm/repository/workspace.repository';
-import { TwentyORMGlobalManager } from 'src/engine/twenty-orm/twenty-orm-global.manager';
 import { type WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-member/standard-objects/workspace-member.workspace-entity';
 
 describe('UserService', () => {
   let service: UserService;
   let userRepository: Repository<UserEntity>;
   let workspaceService: WorkspaceService;
-  let twentyORMGlobalManager: TwentyORMGlobalManager;
+  let globalWorkspaceOrmManager: GlobalWorkspaceOrmManager;
   let userRoleService: UserRoleService;
 
   const mockWorkspaceMemberRepo = {
@@ -40,6 +46,8 @@ describe('UserService', () => {
           useValue: {
             findOne: jest.fn(),
             save: jest.fn(),
+            softDelete: jest.fn(),
+            update: jest.fn(),
           },
         },
         {
@@ -47,9 +55,28 @@ describe('UserService', () => {
           useValue: { deleteWorkspace: jest.fn() },
         },
         {
-          provide: TwentyORMGlobalManager,
+          provide: WorkspaceDomainsService,
           useValue: {
-            getRepositoryForWorkspace: jest.fn(),
+            getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain:
+              jest.fn(),
+          },
+        },
+        {
+          provide: EmailVerificationService,
+          useValue: { sendVerificationEmail: jest.fn() },
+        },
+        {
+          provide: `MESSAGE_QUEUE_${MessageQueue.workspaceQueue}`,
+          useValue: { add: jest.fn() },
+        },
+        {
+          provide: GlobalWorkspaceOrmManager,
+          useValue: {
+            getRepository: jest.fn(),
+            executeInWorkspaceContext: jest
+              .fn()
+
+              .mockImplementation((_authContext: any, fn: () => any) => fn()),
           },
         },
         {
@@ -57,6 +84,16 @@ describe('UserService', () => {
           useValue: {
             validateUserWorkspaceIsNotUniqueAdminOrThrow: jest.fn(),
           },
+        },
+        {
+          provide: UserWorkspaceService,
+          useValue: {
+            deleteUserWorkspace: jest.fn(),
+          },
+        },
+        {
+          provide: ApplicationService,
+          useValue: {},
         },
       ],
     }).compile();
@@ -66,8 +103,8 @@ describe('UserService', () => {
       getRepositoryToken(UserEntity),
     );
     userRoleService = module.get<UserRoleService>(UserRoleService);
-    twentyORMGlobalManager = module.get<TwentyORMGlobalManager>(
-      TwentyORMGlobalManager,
+    globalWorkspaceOrmManager = module.get<GlobalWorkspaceOrmManager>(
+      GlobalWorkspaceOrmManager,
     );
     workspaceService = module.get<WorkspaceService>(WorkspaceService);
   });
@@ -82,9 +119,7 @@ describe('UserService', () => {
       );
 
       expect(res).toBeNull();
-      expect(
-        twentyORMGlobalManager.getRepositoryForWorkspace,
-      ).not.toHaveBeenCalled();
+      expect(globalWorkspaceOrmManager.getRepository).not.toHaveBeenCalled();
     });
 
     it('fetches from workspace member repo when workspace active', async () => {
@@ -94,7 +129,7 @@ describe('UserService', () => {
       } as WorkspaceMemberWorkspaceEntity);
 
       jest
-        .spyOn(twentyORMGlobalManager, 'getRepositoryForWorkspace')
+        .spyOn(globalWorkspaceOrmManager, 'getRepository')
         .mockResolvedValue(mockWorkspaceMemberRepo);
 
       const res = await service.loadWorkspaceMember(
@@ -105,11 +140,13 @@ describe('UserService', () => {
         } as WorkspaceEntity,
       );
 
-      expect(
-        twentyORMGlobalManager.getRepositoryForWorkspace,
-      ).toHaveBeenCalledWith('w1', 'workspaceMember', {
-        shouldBypassPermissionChecks: true,
-      });
+      expect(globalWorkspaceOrmManager.getRepository).toHaveBeenCalledWith(
+        'w1',
+        'workspaceMember',
+        {
+          shouldBypassPermissionChecks: true,
+        },
+      );
       expect(mockWorkspaceMemberRepo.findOne).toHaveBeenCalledWith({
         where: { userId: 'u1' },
       });
@@ -125,9 +162,7 @@ describe('UserService', () => {
       } as WorkspaceEntity);
 
       expect(res).toEqual([]);
-      expect(
-        twentyORMGlobalManager.getRepositoryForWorkspace,
-      ).not.toHaveBeenCalled();
+      expect(globalWorkspaceOrmManager.getRepository).not.toHaveBeenCalled();
     });
 
     it('fetches members withDeleted flag', async () => {
@@ -135,7 +170,7 @@ describe('UserService', () => {
         .spyOn(mockWorkspaceMemberRepo, 'find')
         .mockResolvedValue([{ id: 'wm1' } as WorkspaceMemberWorkspaceEntity]);
       jest
-        .spyOn(twentyORMGlobalManager, 'getRepositoryForWorkspace')
+        .spyOn(globalWorkspaceOrmManager, 'getRepository')
         .mockResolvedValue(mockWorkspaceMemberRepo);
 
       const res = await service.loadWorkspaceMembers(
@@ -170,7 +205,7 @@ describe('UserService', () => {
           { id: 'wm-del' } as WorkspaceMemberWorkspaceEntity,
         ]);
       jest
-        .spyOn(twentyORMGlobalManager, 'getRepositoryForWorkspace')
+        .spyOn(globalWorkspaceOrmManager, 'getRepository')
         .mockResolvedValue(mockWorkspaceMemberRepo);
 
       await service.loadDeletedWorkspaceMembersOnly({
@@ -290,7 +325,7 @@ describe('UserService', () => {
           { id: 'wm-2', userId: 'uX' } as WorkspaceMemberWorkspaceEntity,
         ]);
       jest
-        .spyOn(twentyORMGlobalManager, 'getRepositoryForWorkspace')
+        .spyOn(globalWorkspaceOrmManager, 'getRepository')
         .mockResolvedValue(mockWorkspaceMemberRepo);
 
       jest
@@ -311,23 +346,31 @@ describe('UserService', () => {
     });
 
     it('deletes workspace member and workspace when user is sole member', async () => {
+      const mockedUserWorkspace = {
+        id: 'uw2',
+        workspaceId: 'w2',
+      } as UserWorkspaceEntity;
+
       (userRepository.findOne as jest.Mock).mockResolvedValue({
         id: 'u2',
-        userWorkspaces: [{ id: 'uw2', workspaceId: 'w2' }],
+        userWorkspaces: [mockedUserWorkspace],
       });
 
       jest
         .spyOn(mockWorkspaceMemberRepo, 'find')
         .mockResolvedValue([wmForUser('u2')]);
       jest
-        .spyOn(twentyORMGlobalManager, 'getRepositoryForWorkspace')
+        .spyOn(globalWorkspaceOrmManager, 'getRepository')
         .mockResolvedValue(mockWorkspaceMemberRepo);
+
+      (userRepository.softDelete as jest.Mock).mockResolvedValue({
+        affected: 1,
+        raw: [],
+        generatedMaps: [],
+      } as UpdateResult);
 
       const res = await service.deleteUser('u2');
 
-      expect(mockWorkspaceMemberRepo.delete).toHaveBeenCalledWith({
-        userId: 'u2',
-      });
       expect(workspaceService.deleteWorkspace).toHaveBeenCalledWith('w2');
       expect(res).toMatchObject({ id: 'u2' });
     });

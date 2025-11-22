@@ -1,41 +1,27 @@
-import { type PageLayoutTabLayoutMode } from '@/page-layout/types/PageLayoutTabLayoutMode';
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { type ReactNode } from 'react';
-import { type PageLayoutType } from '~/generated/graphql';
+import { type WidgetCardVariant } from '~/modules/page-layout/widgets/types/WidgetCardVariant';
 
-export type WidgetCardContentProps = {
-  children?: ReactNode;
-  pageLayoutType: PageLayoutType;
-  layoutMode: PageLayoutTabLayoutMode;
-  className?: string;
-};
-
-const StyledWidgetCardContent = styled.div<WidgetCardContentProps>`
-  align-items: center;
-  display: flex;
-  height: 100%;
-  width: 100%;
-  justify-content: center;
+const StyledWidgetCardContent = styled.div<{ variant: WidgetCardVariant }>`
   box-sizing: border-box;
-  padding: ${({ theme }) => theme.spacing(2)};
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  overflow: hidden;
 
-  ${({ theme, pageLayoutType, layoutMode }) => {
-    if (layoutMode === 'canvas') {
+  ${({ theme, variant }) => {
+    if (variant === 'dashboard') {
       return css`
-        padding: 0;
+        padding: ${theme.spacing(2)};
       `;
     }
 
-    switch (pageLayoutType) {
-      case 'RECORD_PAGE':
-        return css`
-          border: 1px solid ${theme.border.color.medium};
-          border-radius: ${theme.border.radius.md};
-        `;
-
-      default:
-        return '';
+    if (variant === 'record-page') {
+      return css`
+        border: 1px solid ${theme.border.color.medium};
+        border-radius: ${theme.border.radius.md};
+        padding: ${theme.spacing(2)};
+      `;
     }
   }}
 `;

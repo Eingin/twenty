@@ -165,9 +165,29 @@ const SettingsAgentForm = lazy(() =>
   })),
 );
 
+const SettingsAgentTurnDetail = lazy(() =>
+  import('~/pages/settings/ai/SettingsAgentTurnDetail').then((module) => ({
+    default: module.SettingsAgentTurnDetail,
+  })),
+);
+
+const SettingsSkillForm = lazy(() =>
+  import('~/pages/settings/ai/SettingsSkillForm').then((module) => ({
+    default: module.SettingsSkillForm,
+  })),
+);
+
 const SettingsWorkspaceMembers = lazy(() =>
-  import('~/pages/settings/SettingsWorkspaceMembers').then((module) => ({
-    default: module.SettingsWorkspaceMembers,
+  import('~/pages/settings/members/SettingsWorkspaceMembers').then(
+    (module) => ({
+      default: module.SettingsWorkspaceMembers,
+    }),
+  ),
+);
+
+const SettingsWorkspaceMember = lazy(() =>
+  import('~/pages/settings/members/SettingsWorkspaceMember').then((module) => ({
+    default: module.SettingsWorkspaceMember,
   })),
 );
 
@@ -203,14 +223,6 @@ const SettingsBilling = lazy(() =>
   import('~/pages/settings/SettingsBilling').then((module) => ({
     default: module.SettingsBilling,
   })),
-);
-
-const SettingsIntegrations = lazy(() =>
-  import('~/pages/settings/integrations/SettingsIntegrations').then(
-    (module) => ({
-      default: module.SettingsIntegrations,
-    }),
-  ),
 );
 
 const SettingsObjects = lazy(() =>
@@ -326,9 +338,9 @@ const SettingsAdminConfigVariableDetails = lazy(() =>
   })),
 );
 
-const SettingsReleases = lazy(() =>
-  import('~/pages/settings/releases/SettingsReleases').then((module) => ({
-    default: module.SettingsReleases,
+const SettingsUpdates = lazy(() =>
+  import('~/pages/settings/updates/SettingsUpdates').then((module) => ({
+    default: module.SettingsUpdates,
   })),
 );
 
@@ -422,6 +434,22 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
           path={SettingsPath.AIAgentDetail}
           element={<SettingsAgentForm mode="edit" />}
         />
+        <Route
+          path={SettingsPath.AIAgentTurnDetail}
+          element={<SettingsAgentTurnDetail />}
+        />
+        <Route
+          path={SettingsPath.AINewSkill}
+          element={<SettingsSkillForm mode="create" />}
+        />
+        <Route
+          path={SettingsPath.AISkillDetail}
+          element={<SettingsSkillForm mode="edit" />}
+        />
+        <Route
+          path={SettingsPath.ServerlessFunctionDetail}
+          element={<SettingsServerlessFunctionDetail />}
+        />
         <Route path={SettingsPath.Billing} element={<SettingsBilling />} />
         <Route path={SettingsPath.Domain} element={<SettingsDomain />} />
         <Route
@@ -447,6 +475,10 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
         <Route
           path={SettingsPath.WorkspaceMembersPage}
           element={<SettingsWorkspaceMembers />}
+        />
+        <Route
+          path={SettingsPath.WorkspaceMemberPage}
+          element={<SettingsWorkspaceMember />}
         />
       </Route>
       <Route
@@ -532,10 +564,6 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
           path={SettingsPath.WebhookDetail}
           element={<SettingsDevelopersWebhookDetail />}
         />
-        <Route
-          path={SettingsPath.Integrations}
-          element={<SettingsIntegrations />}
-        />
       </Route>
 
       <Route
@@ -603,7 +631,7 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
           />
         }
       >
-        <Route path={SettingsPath.Releases} element={<SettingsReleases />} />
+        <Route path={SettingsPath.Updates} element={<SettingsUpdates />} />
       </Route>
     </Routes>
   </Suspense>
